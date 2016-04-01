@@ -47,4 +47,14 @@ Run each/all/any of the test scripts.
 5. Verify the container is **not** available outside the transaction
 6. Rollback the transaction
 7. Verify the container is still **not** available outside the transaction
- 
+
+### version\_tests.sh
+1. Create a container
+2. Check for versions of the container
+3. Create a version of the container (version1)
+4. Try to create another version with the same label
+5. Update the container with a PATCH request
+6. Create another version of the container (version2)
+7. Try to delete the current version
+8. Revert to the previous version (version1)
+9. Delete the newer version (version2)

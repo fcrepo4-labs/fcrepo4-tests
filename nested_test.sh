@@ -10,15 +10,15 @@ PARENT="/test_nested"
 checkForReTest $PARENT
 
 # Tests
-echo "Create an object"
+echo "Create an container"
 HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: text/turtle" --data-binary "@${RSCDIR}/object.ttl" ${FEDORA_URL}${PARENT}/object1)
 resultCheck 201 $HTTP_RES
 
-echo "Create an object in an object"
+echo "Create an container in an container"
 HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: text/turtle" --data-binary "@${RSCDIR}/object.ttl" ${FEDORA_URL}${PARENT}/object1/object2)
 resultCheck 201 $HTTP_RES
 
-echo "Create binary inside an object inside an object"
+echo "Create binary inside an container inside an container"
 HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: image/jpeg" --data-binary "@${RSCDIR}/basic_image.jpg" ${FEDORA_URL}${PARENT}/object1/object2/picture)
 resultCheck 201 $HTTP_RES
 
@@ -26,7 +26,7 @@ echo "Delete binary"
 HTTP_RES=$(curl $CURL_OPTS -XDELETE -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/object1/object2/picture)
 resultCheck 204 $HTTP_RES
 
-echo "Delete object with an object inside it"
+echo "Delete container with an container inside it"
 HTTP_RES=$(curl $CURL_OPTS -XDELETE -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/object1)
 resultCheck 204 $HTTP_RES
 
