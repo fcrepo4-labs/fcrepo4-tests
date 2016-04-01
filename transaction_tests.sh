@@ -76,3 +76,8 @@ then
   
   echo "All tests completed"
 fi
+
+read -p "Remove any test objects created? (Y/n) " DELETE
+if [ "$DELETE" == "y" ] || [ "$DELETE" == 'y' ] || [ "$DELETE" == "" ]; then
+  cleanUpPath "$PARENT"
+fi

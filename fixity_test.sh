@@ -19,3 +19,7 @@ HTTP_RES=$(curl $CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARE
 resultCheck 200 $HTTP_RES
 
 echo "All tests completed"
+read -p "Remove any test objects created? (Y/n) " DELETE
+if [ "$DELETE" == "y" ] || [ "$DELETE" == 'y' ] || [ "$DELETE" == "" ]; then
+  cleanUpPath "$PARENT"
+fi

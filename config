@@ -84,13 +84,31 @@ function checkForReTest() {
       echo "This test has been run. You need to remove this object and all it's children before re-running the test."
       read -p "Remove the test objects and re-run? (y/N) " RERUN
       if [ "$RERUN" == "Y" ] || [ "$RERUN" == "y" ]; then
-        curl -o/dev/null -s -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL}
-        curl -s -o/dev/null -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL}/fcr:tombstone
-        HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${URL})
+        if cleanUpPath "$URL"
+        then
+          HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${URL})
+        else
+          echo "Error removing $URL, you may need to remove it manually."
+          exit 1
+        fi
       else
         exit 1
       fi
     fi
   fi
   return 0
+}
+
+# Delete the object at path $URL including it's tombstone
+function cleanUpPath() {
+  local URL=$1
+  echo "Deleting ${FEDORA_URL}${URL}"
+  HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL})
+  if [ "$HTTP_RES" == "204" ]; then
+    HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL}/fcr:tombstone)
+    if [ "$HTTP_RES" == "204" ]; then
+      return 0
+    fi
+  fi
+  return 1
 }
