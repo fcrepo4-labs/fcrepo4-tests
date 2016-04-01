@@ -6,6 +6,8 @@ AUTH_USER="fedoraAdmin"
 AUTH_PASS="secret3"
 FEDORA_HOST="http://localhost"
 FEDORA_PORT="8080"
+# Depending on how you start the fedora server, you may need to edit this path. 
+# The one click webapp doesn't have fcrepo in the path.
 FEDORA_PATH="/fcrepo/rest"
 FEDORA_URL="${FEDORA_HOST}:${FEDORA_PORT}${FEDORA_PATH}"
 
@@ -18,7 +20,12 @@ function resultCheck() {
   ACTUAL=$2
   if [ "$EXPECTED" -ne "$ACTUAL" ]; then
     echo "ERROR expected $EXPECTED and received $ACTUAL"
+    if [ "$ACTUAL" == "405" ]; then
+      echo "ERROR check the FEDORA_PATH setting in the config file to ensure you're pointing to the repository correctly."
+    fi
+
     exit 1
   fi
+
   return 0
 }
