@@ -1,0 +1,24 @@
+#!/bin/sh
+
+CWD=$(pwd)
+
+AUTH_USER="fedoraAdmin"
+AUTH_PASS="secret3"
+FEDORA_HOST="http://localhost"
+FEDORA_PORT="8080"
+FEDORA_PATH="/fcrepo/rest"
+FEDORA_URL="${FEDORA_HOST}:${FEDORA_PORT}${FEDORA_PATH}"
+
+RSCDIR="${PWD}/resources"
+
+CURL_OPTS="-s -o /dev/null --write-out %{http_code} --no-keepalive -i"
+
+function resultCheck() {
+  EXPECTED=$1
+  ACTUAL=$2
+  if [ "$EXPECTED" -ne "$ACTUAL" ]; then
+    echo "ERROR expected $EXPECTED and received $ACTUAL"
+    exit 1
+  fi
+  return 0
+}
