@@ -2,19 +2,26 @@
 
 CWD=$(pwd)
 
+# Username.
 AUTH_USER="fedoraAdmin"
+# Password.
 AUTH_PASS="secret3"
+# Hostname for Fedora instance.
 FEDORA_HOST="http://localhost"
+# Port for Fedora instance.
 FEDORA_PORT="8080"
 # Depending on how you start the fedora server, you may need to edit this path. 
 # The one click webapp doesn't have fcrepo in the path.
 FEDORA_PATH="/fcrepo/rest"
+# Build the full Fedora URL.
 FEDORA_URL="${FEDORA_HOST}:${FEDORA_PORT}${FEDORA_PATH}"
-
+# Directory where turtle, sparql and binary resources sit.
 RSCDIR="${PWD}/resources"
-
+# Default options for cURL
 CURL_OPTS="-s -o /dev/null --write-out %{http_code} --no-keepalive -i"
 
+# Takes an expected and actual Status Code
+# Usage: resultCheck 200 $RETURNED_CODE
 function resultCheck() {
   EXPECTED=$1
   ACTUAL=$2
@@ -26,6 +33,64 @@ function resultCheck() {
 
     exit 1
   fi
+  echo "$EXPECTED == $ACTUAL (Pass)"
+  return 0
+}
 
+# Takes an expected Status Code and grabs the other from Headers.
+# NOTE: Header variable must be wrapped in quotes when calling.
+# Usage: resultCheckInHeaders 200 "$RETURNED_CODE"
+function resultCheckInHeaders() {
+  EXPECTED=$1
+  HEADERS=$2
+  ACTUAL=$(echo "$HEADERS" | grep 'HTTP/1.1' | cut -d' ' -f2)
+  if [ "$EXPECTED" -ne "$ACTUAL" ]; then
+    echo "ERROR expected $EXPECTED and received $ACTUAL"
+    if [ "$ACTUAL" == "405" ]; then
+      echo "ERROR check the FEDORA_PATH setting in the config file to ensure you're pointing to the repository correctly."
+    fi
+
+    exit 1
+  fi
+  echo "$EXPECTED == $ACTUAL (Pass)"
+  return 0
+}
+
+# Find the Location: header and return the value in the LOCATION variable.
+# NOTE: Header variable must be wrapped in quotes when calling.
+# Usage: getLocationFromHeaders "$HEADERS"
+# Return: Location URL in the $LOCATION variable.
+function getLocationFromHeaders() {
+  HEADERS=$1
+  LOCATION=$(echo "$HEADERS" | grep '^Location:' | cut -d' ' -f2)
+  if [ -z "$LOCATION" ]; then
+    echo "Could not find the Location: header"
+    return 1
+  else
+    return 0
+  fi
+}
+
+# Check if the parent object of the tests exists, delete if requested.
+# Takes the parent object path
+function checkForReTest() {
+  local URL=$1
+  HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${URL})
+  if [ "$HTTP_RES" != "201" ]; then
+    if [ "$HTTP_RES" == "000" ]; then
+      echo "Attempted to run test but received odd results (HTTP status of $HTTP_RES). Is Fedora4 running?"
+      exit 1
+    else
+      echo "This test has been run. You need to remove this object and all it's children before re-running the test."
+      read -p "Remove the test objects and re-run? (y/N) " RERUN
+      if [ "$RERUN" == "Y" ] || [ "$RERUN" == "y" ]; then
+        curl -o/dev/null -s -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL}
+        curl -s -o/dev/null -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL}/fcr:tombstone
+        HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${URL})
+      else
+        exit 1
+      fi
+    fi
+  fi
   return 0
 }
