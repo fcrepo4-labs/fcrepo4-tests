@@ -3,8 +3,8 @@
 @prefix ore: <http://www.openarchives.org/ore/terms/> .
 @prefix ldp: <http://www.w3.org/ns/ldp#> .
 
-<> a ldp:IndirectContainer, pcdm:Object ;
+<> a ldp:IndirectContainer ;
    dc:title "Members Container" ;
  ldp:membershipResource <{{PCDM_COLLECTION}}> ;
- ldp:insertedContentRelation pcdm:hasMember ;
- ldp:hasMemberRelation ore:proxyFor .
+ ldp:hasMemberRelation pcdm:hasMember ;
+ ldp:insertedContentRelation ore:proxyFor .
