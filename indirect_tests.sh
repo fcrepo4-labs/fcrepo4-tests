@@ -19,14 +19,14 @@ HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: te
 resultCheck 201 $HTTP_RES
 echo "OK"
 
-echo "Rewrite the indirect container turtle to use the correct fedora path and parent"
+# Rewrite the indirect container turtle to use the correct fedora path and parent
 INDIRECT=$(sed -e "s|{{PCDM_COLLECTION}}|${FEDORA_PATH}${PARENT}/collection|" "${RSCDIR}/pcdm_indirect.ttl")
 
 echo "Create an indirect container inside collection called members"
 HTTP_RES=$(echo "${INDIRECT}" | curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: text/turtle" --upload-file - ${FEDORA_URL}${PARENT}/collection/members)
 resultCheck 201 $HTTP_RES
 
-echo "Rewrite the proxyFor object turtle to use the correct fedora path and parent"
+# Rewrite the proxyFor object turtle to use the correct fedora path and parent
 PROXY=$(sed -e "s|{{PROXY_FOR}}|${FEDORA_PATH}${PARENT}/object1|" "${RSCDIR}/pcdm_proxy.ttl")
 
 echo "Create a proxy to the PCDM object inside members"

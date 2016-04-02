@@ -14,16 +14,17 @@ Run each/all/any of the test scripts.
 
 ## Tests implemented
 
-### nested\_test.sh
+### nested\_tests.sh
 1. Create a container
 2. Create a container inside the container from step 1
 3. Create a binary inside the container from step 2
 4. Delete the binary
 5. Delete the container from step 1
 
-### fixity\_test.sh
+### fixity\_tests.sh
 1. Create a binary resource
 2. Get a fixity result for that resource
+3. Compare that the SHA-1 hash matches the expected value
 
 ### sparql\_tests.sh
 1. Create a container
@@ -58,3 +59,10 @@ Run each/all/any of the test scripts.
 7. Try to delete the current version
 8. Revert to the previous version (version1)
 9. Delete the newer version (version2)
+
+### indirect\_tests.sh
+1. Create a pcdm:Object
+2. Create a pcdm:Collection
+3. Create an indirect container "members" inside the pcdm:Collection
+4. Create a proxy object for the pcdm:Object inside the **members** indirectContainer
+5. Verify that the pcdm:Collection has the memberRelation property added pointing to the pcdm:Object
