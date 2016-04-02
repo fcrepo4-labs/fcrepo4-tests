@@ -7,6 +7,8 @@ fi
 # Create test objects all inside here for easy of review
 PARENT="/test_fixity"
 
+FIXITY_RESULT="<urn:sha1:dec028a4400b4f7ed80ed1174e65179d6b57a0f2>"
+
 checkForReTest $PARENT
 
 # Tests
@@ -15,11 +17,20 @@ HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: im
 resultCheck 201 $HTTP_RES
 
 echo "Get a fixity result"
-HTTP_RES=$(curl $CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/image/fcr:fixity)
-resultCheck 200 $HTTP_RES
+HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/image/fcr:fixity)
+resultCheckInHeaders 200 "$HTTP_RES"
+FIXITY=$(echo "$HTTP_RES" | grep 'premis:hasMessageDigest' | sed -e 's/^\s*//' -e 's/\s*$//' | cut -d' ' -f2)
+if [ -z "$FIXITY" ]; then
+  echo "Fixity result not found"
+  exit 1
+elif [ "$FIXITY" == "$FIXITY_RESULT" ]; then
+  echo "Fixity result found and matches expected result"
+  echo "(${FIXITY}) == (${FIXITY_RESULT})" 
+else
+  echo "Unknown fixity error"
+  echo "Please compare the fixity results manually"
+  exit 1
+fi
 
 echo "All tests completed"
-read -p "Remove any test objects created? (Y/n) " DELETE
-if [ "$DELETE" == "y" ] || [ "$DELETE" == 'y' ] || [ "$DELETE" == "" ]; then
-  cleanUpPath "$PARENT"
-fi
+cleanUpTests "$PARENT"

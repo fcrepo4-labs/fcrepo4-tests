@@ -19,6 +19,8 @@ FEDORA_URL="${FEDORA_HOST}:${FEDORA_PORT}${FEDORA_PATH}"
 RSCDIR="${PWD}/resources"
 # Default options for cURL
 CURL_OPTS="-s -o /dev/null --write-out %{http_code} --no-keepalive -i"
+# cURL options to not alter response
+CUSTOM_CURL_OPTS="-s --no-keepalive -i"
 
 # Takes an expected and actual Status Code
 # Usage: resultCheck 200 $RETURNED_CODE
@@ -104,11 +106,20 @@ function cleanUpPath() {
   local URL=$1
   echo "Deleting ${FEDORA_URL}${URL}"
   HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL})
-  if [ "$HTTP_RES" == "204" ]; then
+  if [ "$HTTP_RES" == "204" ] || [ "$HTTP_RES" == "410" ]; then
     HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL}/fcr:tombstone)
     if [ "$HTTP_RES" == "204" ]; then
       return 0
     fi
   fi
   return 1
+}
+
+# Check to see if the test objects at $PARENT path should be deleted.
+function cleanUpTests() {
+  local PARENT=$1
+  read -p "Remove any test objects created? (Y/n) " DELETE
+  if [ "$DELETE" == "y" ] || [ "$DELETE" == 'y' ] || [ "$DELETE" == "" ]; then
+    cleanUpPath "$PARENT"
+  fi
 }

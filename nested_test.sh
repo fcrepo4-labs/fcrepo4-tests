@@ -31,7 +31,4 @@ HTTP_RES=$(curl $CURL_OPTS -XDELETE -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${P
 resultCheck 204 $HTTP_RES
 
 echo "All Tests Completed"
-read -p "Remove any test objects created? (Y/n) " DELETE
-if [ "$DELETE" == "y" ] || [ "$DELETE" == 'y' ] || [ "$DELETE" == "" ]; then
-  cleanUpPath "$PARENT"
-fi
+cleanUpTests "$PARENT"

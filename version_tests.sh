@@ -9,8 +9,6 @@ PARENT="/test_versioning"
 
 checkForReTest $PARENT
 
-CUSTOM_CURL_OPTS="-s --no-keepalive -i"
-
 echo "Create a container"
 HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: text/turtle" --data-binary "@${RSCDIR}/object.ttl" ${FEDORA_URL}${PARENT}/object1)
 resultCheck 201 $HTTP_RES
@@ -48,8 +46,4 @@ HTTP_RES=$(curl $CURL_OPTS -XDELETE -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${P
 resultCheck 204 $HTTP_RES
 
 echo "All tests completed"
-read -p "Remove any test objects created? (Y/n) " DELETE
-if [ "$DELETE" == "y" ] || [ "$DELETE" == 'y' ] || [ "$DELETE" == "" ]; then
-  cleanUpPath "$PARENT"
-fi
-echo "Done"
+cleanUpTests "$PARENT"

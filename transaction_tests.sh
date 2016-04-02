@@ -9,8 +9,6 @@ PARENT="/test_transaction"
 
 checkForReTest $PARENT
 
-CUSTOM_CURL_OPTS="-s --no-keepalive -i"
-
 # Tests
 echo "Create a transaction"
 HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XPOST -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}/fcr:tx)
@@ -77,7 +75,4 @@ then
   echo "All tests completed"
 fi
 
-read -p "Remove any test objects created? (Y/n) " DELETE
-if [ "$DELETE" == "y" ] || [ "$DELETE" == 'y' ] || [ "$DELETE" == "" ]; then
-  cleanUpPath "$PARENT"
-fi
+cleanUpTests "$PARENT"

@@ -1,0 +1,10 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix pcdm: <http://pcdm.org/models#> .
+@prefix ore: <http://www.openarchives.org/ore/terms/> .
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+
+<> a ldp:IndirectContainer, pcdm:Object ;
+   dc:title "Members Container" ;
+ ldp:membershipResource <{{PCDM_COLLECTION}}> ;
+ ldp:insertedContentRelation pcdm:hasMember ;
+ ldp:hasMemberRelation ore:proxyFor .
