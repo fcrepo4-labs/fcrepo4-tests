@@ -36,8 +36,18 @@ resultCheck 201 $HTTP_RES
 echo "Checking for pcdm:hasMember property on PCDM collection to PCDM object"
 HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/collection)
 resultCheckInHeaders 200 "$HTTP_RES"
-HAS_MEMBER=$(echo "$HTTP_RES" | grep ':hasMember')
-echo "has member $HAS_MEMBER"
-echo "headers $HTTP_RES"
+HAS_MEMBER=$(echo "$HTTP_RES" | grep '(pcdm|ns[0-9]{3}):hasMember' | sed -e 's/^\s*//' -e 's/\s*$//' | cut -d' ' -f2)
+if [ -z "$HAS_MEMBER" ]; then
+  echo "ERROR: Could not locate pcdm:hasMember property on Collection"
+  echo "Please check ${FEDORA_URL}${PARENT}/collection manually."
+  exit 1
+elif [ "$HAS_MEMBER" == "<${FEDORA_URL}${PARENT}/object1>" ]; then
+  echo "Found pcdm:hasMember property on Collection to Object"
+else
+  echo "ERROR: Unknown error finding indirect container added property on Collection"
+  echo "Please check ${FEDORA_URL}${PARENT}/collection manually."
+  exit 1
+fi
 
+echo "Completed all tests"
 cleanUpTests $PARENT

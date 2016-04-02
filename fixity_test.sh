@@ -20,15 +20,17 @@ echo "Get a fixity result"
 HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/image/fcr:fixity)
 resultCheckInHeaders 200 "$HTTP_RES"
 FIXITY=$(echo "$HTTP_RES" | grep 'premis:hasMessageDigest' | sed -e 's/^\s*//' -e 's/\s*$//' | cut -d' ' -f2)
+
 if [ -z "$FIXITY" ]; then
-  echo "Fixity result not found"
+  echo "ERROR: Fixity result not found"
+  echo "Please check ${FEDORA_URL}${PARENT}/image/fcr:fixity manually."
   exit 1
 elif [ "$FIXITY" == "$FIXITY_RESULT" ]; then
   echo "Fixity result found and matches expected result"
   echo "(${FIXITY}) == (${FIXITY_RESULT})" 
 else
-  echo "Unknown fixity error"
-  echo "Please compare the fixity results manually"
+  echo "ERROR: Unknown fixity error. Please compare the fixity results manually"
+  echo "Please check ${FEDORA_URL}${PARENT}/image/fcr:fixity manually."
   exit 1
 fi
 
