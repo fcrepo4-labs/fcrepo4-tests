@@ -2,26 +2,6 @@
 
 CWD=$(pwd)
 
-# Username.
-AUTH_USER="fedoraAdmin"
-# Password.
-AUTH_PASS="secret3"
-# Hostname for Fedora instance.
-FEDORA_HOST="http://localhost"
-# Port for Fedora instance.
-FEDORA_PORT="8080"
-# Depending on how you start the fedora server, you may need to edit this path. 
-# The one click webapp doesn't have fcrepo in the path.
-FEDORA_PATH="/fcrepo/rest"
-# Build the full Fedora URL.
-FEDORA_URL="${FEDORA_HOST}:${FEDORA_PORT}${FEDORA_PATH}"
-# Directory where turtle, sparql and binary resources sit.
-RSCDIR="${PWD}/resources"
-# Default options for cURL
-CURL_OPTS="-s -o /dev/null --write-out %{http_code} --no-keepalive -i"
-# cURL options to not alter response
-CUSTOM_CURL_OPTS="-s --no-keepalive -i"
-
 # Takes an expected and actual Status Code
 # Usage: resultCheck 200 $RETURNED_CODE
 function resultCheck() {
@@ -64,12 +44,43 @@ function resultCheckInHeaders() {
 # Return: Location URL in the $LOCATION variable.
 function getLocationFromHeaders() {
   HEADERS=$1
-  LOCATION=$(echo "$HEADERS" | grep '^Location:' | cut -d' ' -f2)
+  export LOCATION=$(echo "$HEADERS" | grep '^Location:' | cut -d' ' -f2 | tr -d '\r')
   if [ -z "$LOCATION" ]; then
     echo "Could not find the Location: header"
     return 1
   else
     return 0
+  fi
+}
+
+# Check that the Content-Type header matches the expected value.
+# NOTE: Header variable must be wrapped in quotes when calling.
+# Usage: checkContentType "expected/content-type" "$HEADERS"
+function checkContentType() {
+  EXPECTED="$1"
+  HEADERS=$2
+  ACTUAL=$(echo "$HEADERS" | grep '^Content-Type:' | cut -d' ' -f2 | tr -d '\r')
+  if [ "$EXPECTED" == "$ACTUAL" ]; then
+    echo "$EXPECTED == $ACTUAL (Pass)"
+    return 0
+  else
+    echo "ERROR: expected Content-Type to be \"$EXPECTED\", but was \"$ACTUAL\""
+    return 1
+  fi
+}
+
+# Check the dc:title value of a resource.
+# Usage: checkTitle "Expected Title" $URL
+function checkTitle() {
+  EXPECTED="$1"
+  TRIPLES=$(curl $CUSTOM_CURL_OPTS -H "Accept: application/n-triples" -u"${AUTH_USER}:${AUTH_PASS}" "${2}")
+  ACTUAL=$(echo "$TRIPLES" | grep "<http://purl.org/dc/elements/1.1/title>" | cut -d\" -f2)
+  if [ "$EXPECTED" == "$ACTUAL" ]; then
+    echo "$EXPECTED == $ACTUAL (Pass)"
+    return 0
+  else
+    echo "ERROR: expected dc:title to be \"$EXPECTED\", but was \"$ACTUAL\""
+    return 1
   fi
 }
 

@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Copy this file to "config" and update to reflect your local settings
+
+CWD=$(pwd)
+
+# Username.
+AUTH_USER="fedoraAdmin"
+# Password.
+AUTH_PASS="secret3"
+# Hostname for Fedora instance.
+FEDORA_HOST="http://localhost"
+# Port for Fedora instance.
+FEDORA_PORT="8080"
+# Depending on how you start the fedora server, you may need to edit this path. 
+# The one click webapp doesn't have fcrepo in the path.
+FEDORA_PATH="/fcrepo/rest"
+# Build the full Fedora URL.
+FEDORA_URL="${FEDORA_HOST}:${FEDORA_PORT}${FEDORA_PATH}"
+# Directory where turtle, sparql and binary resources sit.
+RSCDIR="${PWD}/resources"
+# Default options for cURL
+CURL_OPTS="-s -o /dev/null --write-out %{http_code} --no-keepalive -i"
+# cURL options to not alter response
+CUSTOM_CURL_OPTS="-s --no-keepalive -i"
+
+
+# include shared functions
+. ./functions
