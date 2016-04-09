@@ -1,0 +1,11 @@
+[FEDORA]
+hostname=http://localhost
+port=8080
+path=/fcrepo/rest
+user=fedoraAdmin
+password=secret3
+fullUrl=%(hostname)s:%(port)s%(path)s
+
+[LOGGING]
+level=DEBUG
+logfile=./html_tester.log
