@@ -66,3 +66,18 @@ Run each/all/any of the test scripts.
 3. Create an indirect container "members" inside the pcdm:Collection
 4. Create a proxy object for the pcdm:Object inside the **members** indirectContainer
 5. Verify that the pcdm:Collection has the memberRelation property added pointing to the pcdm:Object
+
+### authz\_tests.sh
+1. Create a container called **cover**
+2. Patch it to a pcdm:Object
+3. Check for the pcdm:Object in the RDF
+4. Create a container inside **cover** called **files**
+5. Create a container called **my-acls**
+6. Create a container called **acl** inside **my-acls**
+7. Create a container called **authorization** inside **acl**
+8. Patch **authorization** with a WebAC Authorization.
+9. Patch **cover** to add **acl** as an access control.
+10. Verify Anonymous can't access **cover**
+11. Verify fedoraAdmin can access **cover**
+12. Verify testadmin can access **cover**
+13. Verify testuser can't access **cover**
