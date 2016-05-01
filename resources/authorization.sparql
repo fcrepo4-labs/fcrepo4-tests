@@ -1,0 +1,10 @@
+PREFIX acl: <http://www.w3.org/ns/auth/acl#>
+PREFIX pcdm: <http://pcdm.org/models#>
+
+INSERT {
+<> a acl:Authorization ;
+acl:accessToClass pcdm:Object ;
+acl:mode acl:Read, acl:Write;
+acl:agent "adminuser" .
+} WHERE { }
+
