@@ -4,19 +4,33 @@
 
 CWD=$(pwd)
 
-# Admin Username.
-AUTH_USER="fedoraAdmin"
-# Admin Password.
-AUTH_PASS="secret3"
+# If you want to test with mvn jetty:run -Pwebac, set this to 1 to use the correct users and passwords.
+USE_JETTY=0
 
-# Test admin user
-AUTH2_USER="adminuser"
-AUTH2_PASS="password2"
+if [ "$USE_JETTY" -eq 1 ]; then
+  # Admin user
+  AUTH_USER="admin1"
+  AUTH_PASS="password3"
+  # User 2
+  AUTH2_USER="user2"
+  AUTH2_PASS="password2"
+  # User 3
+  AUTH3_USER="user1"
+  AUTH3_PASS="password1"
+else
+  # Admin Username.
+  AUTH_USER="fedoraAdmin"
+  # Admin Password.
+  AUTH_PASS="secret3"
 
-# Test user
-AUTH3_USER="testuser"
-AUTH3_PASS="password1"
+  # Test admin user
+  AUTH2_USER="adminuser"
+  AUTH2_PASS="password2"
 
+  # Test user
+  AUTH3_USER="testuser"
+  AUTH3_PASS="password1"
+fi
 
 # Hostname for Fedora instance.
 FEDORA_HOST="http://localhost"

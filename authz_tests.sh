@@ -29,7 +29,7 @@ NS=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PAR
 if [ -n "$NS" ]; then
   TYPE=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/cover | grep -e "${NS}Object")
   if [ -n "$TYPE" ]; then
-    echo "Found type matching namespace ${NS}:Object (Pass)"
+    echo "Found type matching namespace ${NS}Object (Pass)"
   else
     echo "Did not find pcdm:Object in RDF"
     exit 1
@@ -60,7 +60,7 @@ HTTP_RES=$(sed "s/acl:agent \"adminuser\"/acl:agent \"${AUTH2_USER}\"/g" ${RSCDI
 resultCheck 204 $HTTP_RES
 
 echo "Link \"acl\" to \"cover\""
-HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@${RSCDIR}/link_acl_patch.sparql" ${FEDORA_URL}${PARENT}/cover)
+HTTP_RES=$(sed -e "s~{{FEDORA_PATH}}~${FEDORA_PATH}~" ${RSCDIR}/link_acl_patch.sparql | curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --upload-file - ${FEDORA_URL}${PARENT}/cover)
 resultCheck 204 $HTTP_RES
 
 echo "verifyAuthZ"
