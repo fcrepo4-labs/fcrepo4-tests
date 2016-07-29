@@ -6,6 +6,13 @@ This will create, update and delete resources in the repository. So you may **no
 
 Also, this is doing a cursory test. It relies on the response from Fedora and does not verify changes to the RDF.
 
+Note: in order to test authorization, please first verify that your Fedora repository in configured to use authorization.
+Check the `repository.json` in use, and verify that the `security` block contains a `providers` list such as:
+
+    "providers" : [
+        { "classname" : "org.fcrepo.auth.common.ServletContainerAuthenticationProvider" }
+    ]
+
 ## Usage
 
 Edit the `config` file and review the default variables to ensure the tests are pointing at your repository. 
