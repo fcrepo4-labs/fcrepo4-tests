@@ -19,6 +19,19 @@ function resultCheck() {
   return 0
 }
 
+# Takes an expected string and returned value
+# Usage: resultCheckString "This is the title" $RETURNED_TITLE
+function resultCheckString() {
+  EXPECTED=$1
+  ACTUAL=$2
+  if [ "$EXPECTED" != "$ACTUAL" ]; then
+    echo "ERROR expected $EXPECTED and received $ACTUAL"
+    exit 1
+  fi
+  echo "$EXPECTED == $ACTUAL (Pass)"
+  return 0
+}
+
 # Takes an expected Status Code and grabs the other from Headers.
 # NOTE: Header variable must be wrapped in quotes when calling.
 # Usage: resultCheckInHeaders 200 "$RETURNED_CODE"

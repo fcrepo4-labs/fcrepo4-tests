@@ -33,6 +33,10 @@ RSCDIR="${PWD}/resources"
 CURL_OPTS="-s -o /dev/null --write-out %{http_code} --no-keepalive -i"
 # cURL options to not alter response
 CUSTOM_CURL_OPTS="-s --no-keepalive -i"
+# Solr URL (for camel-toolbox tests)
+SOLR_URL="http://localhost:8080/solr/collection1"
+# Triplestore URL (for camel-toolbox tests)
+TRIPLESTORE_URL="http://localhost:8080/fuseki/test/sparql"
 
 
 # include shared functions
