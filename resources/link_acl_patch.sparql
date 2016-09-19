@@ -1,6 +1,6 @@
 PREFIX acl: <http://www.w3.org/ns/auth/acl#>
 
 INSERT {
-<> acl:accessControl </fcrepo/rest/test_authz/my-acls/acl>
+<> acl:accessControl <{FEDORA_PATH}/test_authz/my-acls/acl>
 
 } WHERE { }
