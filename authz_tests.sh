@@ -10,6 +10,12 @@ PARENT="/test_authz"
 checkForReTest $PARENT
 
 # Tests
+echo "Checking that authZ is enabled"
+RANDOM=$(openssl rand -hex 16)
+
+HTTP_RES=$(curl $CURL_OPTS -XGET -u${RANDOM}:${RANDOM} ${FEDORA_URL})
+resultCheck 401 $HTTP_RES
+
 echo "Create \"cover\" container"
 HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/cover)
 resultCheck 201 $HTTP_RES
@@ -50,7 +56,7 @@ HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARE
 resultCheck 201 $HTTP_RES
 
 echo "Define \"authorization\""
-HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@${RSCDIR}/authorization.sparql" ${FEDORA_URL}${PARENT}/my-acls/acl/authorization)
+HTTP_RES=$(sed "s/acl:agent \"adminuser\"/acl:agent \"${AUTH2_USER}\"/g" ${RSCDIR}/authorization.sparql | curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@-" ${FEDORA_URL}${PARENT}/my-acls/acl/authorization)
 resultCheck 204 $HTTP_RES
 
 echo "Link \"acl\" to \"cover\""
