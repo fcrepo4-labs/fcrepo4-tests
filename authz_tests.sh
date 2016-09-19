@@ -59,8 +59,9 @@ echo "Define \"authorization\""
 HTTP_RES=$(sed "s/acl:agent \"adminuser\"/acl:agent \"${AUTH2_USER}\"/g" ${RSCDIR}/authorization.sparql | curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@-" ${FEDORA_URL}${PARENT}/my-acls/acl/authorization)
 resultCheck 204 $HTTP_RES
 
+PATCH=$(tr "\r\n" " " < ${RSCDIR}/link_acl_patch.sparql | sed -e "s|{FEDORA_PATH}|${FEDORA_PATH}|")
 echo "Link \"acl\" to \"cover\""
-HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@${RSCDIR}/link_acl_patch.sparql" ${FEDORA_URL}${PARENT}/cover)
+HTTP_RES=$(echo ${PATCH} | curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --upload-file - ${FEDORA_URL}${PARENT}/cover)
 resultCheck 204 $HTTP_RES
 
 echo "verifyAuthZ"
