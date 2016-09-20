@@ -56,7 +56,7 @@ HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARE
 resultCheck 201 $HTTP_RES
 
 echo "Define \"authorization\""
-HTTP_RES=$(sed "s/acl:agent \"adminuser\"/acl:agent \"${AUTH2_USER}\"/g" ${RSCDIR}/authorization.sparql | curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@-" ${FEDORA_URL}${PARENT}/my-acls/acl/authorization)
+HTTP_RES=$(sed "s/\"{{USER2}}\"/\"${AUTH2_USER}\"/g" ${RSCDIR}/authorization.sparql | curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@-" ${FEDORA_URL}${PARENT}/my-acls/acl/authorization)
 resultCheck 204 $HTTP_RES
 
 echo "Link \"acl\" to \"cover\""
