@@ -15,7 +15,7 @@ Check the `repository.json` in use, and verify that the `security` block contain
 
 ## Usage
 
-Edit the `config` file and review the default variables to ensure the tests are pointing at your repository. 
+Copy the `config.tmpl` to `config`. Then edit the `config` file and review the default variables to ensure the tests are pointing at your repository. 
 
 Run each/all/any of the test scripts.
 
