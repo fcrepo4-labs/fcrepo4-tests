@@ -37,7 +37,7 @@ echo "Checking for pcdm:hasMember property on PCDM collection to PCDM object"
 HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/collection)
 resultCheckInHeaders 200 "$HTTP_RES"
 
-HAS_MEMBER=$(echo "$HTTP_RES" | grep -e '\(pcdm\|ns[0-9]\+\):hasMember' | sed -e 's/^\s*//' -e 's/\s*$//' | cut -d' ' -f2)
+HAS_MEMBER=$(echo "$HTTP_RES" | grep -e '\(pcdm\|ns[0-9]\+\):hasMember' | sed -e 's/^\s*//' -e 's/\s*$//' -e 's/Member\s*/Member /' | cut -d' ' -f2)
 if [ -z "$HAS_MEMBER" ]; then
   echo "ERROR: Could not locate pcdm:hasMember property on Collection"
   echo "Please check ${FEDORA_URL}${PARENT}/collection manually."

@@ -21,7 +21,7 @@ resultCheck 204 $HTTP_RES
 checkTitle "Updated Title" $LOCATION
 
 echo "Retrieve RDF in a variety of formats"
-RDF_VARIANTS="text/turtle application/rdf+xml application/ld+json application/n-triples text/n3"
+RDF_VARIANTS="text/turtle;charset=utf-8 application/rdf+xml;charset=utf-8 application/ld+json;charset=utf-8 application/n-triples;charset=utf-8 text/n3;charset=utf-8"
 for MIME in $RDF_VARIANTS; do
   HTTP_RES=$(curl $CUSTOM_CURL_OPTS -u"${AUTH_USER}:${AUTH_PASS}" -H "Accept: $MIME" $LOCATION)
   resultCheckInHeaders 200 "$HTTP_RES"
