@@ -25,7 +25,8 @@ HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: 
 resultCheck 204 $HTTP_RES
 
 echo "Checking for pcdm:Object"
-NS=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/cover | grep -e '@prefix \([a-z0-9]\+\):  <http://pcdm.org/models#> ' | cut -d' ' -f2)
+NSTMP=( $(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/cover | grep -e '@prefix \([a-z0-9]\+\):  <http://pcdm.org/models#> ') )
+NS=${NSTMP[1]}
 if [ -n "$NS" ]; then
   TYPE=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/cover | grep -e "${NS}Object")
   if [ -n "$TYPE" ]; then

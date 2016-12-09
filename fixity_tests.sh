@@ -19,7 +19,9 @@ resultCheck 201 $HTTP_RES
 echo "Get a fixity result"
 HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/image/fcr:fixity)
 resultCheckInHeaders 200 "$HTTP_RES"
-FIXITY=$(echo "$HTTP_RES" | grep 'premis:hasMessageDigest' | sed -e 's/^\s*//' -e 's/\s*$//' | cut -d' ' -f3)
+TEMP=( $(echo "$HTTP_RES" | grep 'premis:hasMessageDigest' | sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//') )
+FIXITY=${TEMP[1]}
+
 
 if [ -z "$FIXITY" ]; then
   echo "ERROR: Fixity result not found"
