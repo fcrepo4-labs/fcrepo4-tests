@@ -19,7 +19,7 @@ resultCheck 201 $HTTP_RES
 echo "Get a fixity result"
 HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT}/image/fcr:fixity)
 resultCheckInHeaders 200 "$HTTP_RES"
-TEMP=( $(echo "$HTTP_RES" | grep 'premis:hasMessageDigest' | sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//') )
+TEMP=( $(echo "$HTTP_RES" | grep -v 'premis:hasMessageDigestAlgorithm' |  grep 'premis:hasMessageDigest' | sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//') )
 FIXITY=${TEMP[1]}
 
 
