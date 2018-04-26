@@ -58,14 +58,17 @@ Run each/all/any of the test scripts.
 
 ### version\_tests.sh
 1. Create a container
-2. Check for versions of the container
-3. Create a version of the container (version1)
-4. Try to create another version with the same label
-5. Update the container with a PATCH request
-6. Create another version of the container (version2)
-7. Try to delete the current version
-8. Revert to the previous version (version1)
-9. Delete the newer version (version2)
+1. Check for versions of the container
+1. Enable versioning on the container
+1. Create a version of the container with existing body
+1. Create a version of the container with specific datetime
+1. Try to create a version of the container with the same datetime
+1. Update the container with a PATCH request
+1. Create another version of the container with existing body
+1. Count number of versions
+1. Try to PATCH a version
+1. Delete a version
+1. Count number of versions again
 
 ### indirect\_tests.sh
 1. Create a pcdm:Object
@@ -88,3 +91,11 @@ Run each/all/any of the test scripts.
 11. Verify fedoraAdmin can access **cover**
 12. Verify testadmin can access **cover**
 13. Verify testuser can't access **cover**
+
+### ldp\_containers.sh
+1. Create a LDP Basic container
+1. Validate the correct Link header type
+1. Create a LDP Direct container
+1. Validate the correct Link header type
+1. Create a LDP Indirect container
+1. Validate the correct Link header type
