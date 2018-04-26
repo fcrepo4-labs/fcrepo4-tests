@@ -5,8 +5,8 @@ CWD=$(pwd)
 # Takes an expected and actual Status Code
 # Usage: resultCheck 200 $RETURNED_CODE
 function resultCheck() {
-  EXPECTED=$1
-  ACTUAL=$2
+  local EXPECTED=$1
+  local ACTUAL=$2
   if [ "$EXPECTED" -ne "$ACTUAL" ]; then
     echo "ERROR expected $EXPECTED and received $ACTUAL"
     if [ "$ACTUAL" == "405" ]; then
@@ -22,8 +22,8 @@ function resultCheck() {
 # Takes an expected string and returned value
 # Usage: resultCheckString "This is the title" $RETURNED_TITLE
 function resultCheckString() {
-  EXPECTED=$1
-  ACTUAL=$2
+  local EXPECTED=$1
+  local ACTUAL=$2
   if [ "$EXPECTED" != "$ACTUAL" ]; then
     echo "ERROR expected $EXPECTED and received $ACTUAL"
     exit 1
@@ -36,9 +36,9 @@ function resultCheckString() {
 # NOTE: Header variable must be wrapped in quotes when calling.
 # Usage: resultCheckInHeaders 200 "$RETURNED_CODE"
 function resultCheckInHeaders() {
-  EXPECTED=$1
-  HEADERS=$2
-  ACTUAL=$(echo "$HEADERS" | grep 'HTTP/1.1' | cut -d' ' -f2)
+  local EXPECTED=$1
+  local HEADERS=$2
+  local ACTUAL=$(echo "$HEADERS" | grep 'HTTP/1.1' | cut -d' ' -f2)
   if [ "$EXPECTED" -ne "$ACTUAL" ]; then
     echo "ERROR expected $EXPECTED and received $ACTUAL"
     if [ "$ACTUAL" == "405" ]; then
@@ -56,7 +56,7 @@ function resultCheckInHeaders() {
 # Usage: getLocationFromHeaders "$HEADERS"
 # Return: Location URL in the $LOCATION variable.
 function getLocationFromHeaders() {
-  HEADERS=$1
+  local HEADERS=$1
   export LOCATION=$(echo "$HEADERS" | grep '^Location:' | cut -d' ' -f2 | tr -d '\r')
   if [ -z "$LOCATION" ]; then
     echo "Could not find the Location: header"
@@ -70,9 +70,9 @@ function getLocationFromHeaders() {
 # NOTE: Header variable must be wrapped in quotes when calling.
 # Usage: checkContentType "expected/content-type" "$HEADERS"
 function checkContentType() {
-  EXPECTED="$1"
-  HEADERS=$2
-  ACTUAL=$(echo "$HEADERS" | grep '^Content-Type:' | cut -d' ' -f2 | tr -d '\r')
+  local EXPECTED="$1"
+  local HEADERS=$2
+  local ACTUAL=$(echo "$HEADERS" | grep '^Content-Type:' | cut -d' ' -f2 | tr -d '\r')
   if [ "$EXPECTED" == "$ACTUAL" ]; then
     echo "$EXPECTED == $ACTUAL (Pass)"
     return 0
@@ -85,9 +85,9 @@ function checkContentType() {
 # Check the dc:title value of a resource.
 # Usage: checkTitle "Expected Title" $URL
 function checkTitle() {
-  EXPECTED="$1"
-  TRIPLES=$(curl $CUSTOM_CURL_OPTS -H "Accept: application/n-triples" -u"${AUTH_USER}:${AUTH_PASS}" "${2}")
-  ACTUAL=$(echo "$TRIPLES" | grep "<http://purl.org/dc/elements/1.1/title>" | cut -d\" -f2)
+  local EXPECTED="$1"
+  local TRIPLES=$(curl $CUSTOM_CURL_OPTS -H "Accept: application/n-triples" -u"${AUTH_USER}:${AUTH_PASS}" "${2}")
+  local ACTUAL=$(echo "$TRIPLES" | grep "<http://purl.org/dc/elements/1.1/title>" | cut -d\" -f2)
   if [ "$EXPECTED" == "$ACTUAL" ]; then
     echo "$EXPECTED == $ACTUAL (Pass)"
     return 0
@@ -97,11 +97,39 @@ function checkTitle() {
   fi
 }
 
+# Searches the provided response for Link headers
+# and matches against the provided expected.
+# Usage: assertLinkHeader "<expected URI>;rel=\"title\"" "$HTTP_RES"
+function assertLinkHeader() {
+  local EXPECTED=$1
+  local RESPONSE=$2
+  for l in $(echo "$RESPONSE" | grep '^Link:' | sed -e 's/ /_/g' | cut -d'<' -f2 | tr -d '\r') ; do
+    local newLink="<"$(echo "$l" | sed -e 's/_//g')
+    if [ "${EXPECTED}" == "$newLink" ]; then
+      echo "Link header $EXPECTED == $newLink (Pass)"
+      return 0
+    fi
+  done
+  echo "ERROR: Expected Link header $EXPECTED, did not find one."
+  return 1
+}
+
+function countMementos() {
+  local RESPONSE=$1
+  local counts=0
+  for l in $(echo "$RESPONSE" | sed -e 's/ /_/g' ) ; do
+    local newLink=$(echo "$l" | sed -e 's/_//g')
+    if [[ "$newLink" =~ 'rel="memento"' ]]; then
+      counts=$(expr $counts + 1)
+    fi
+  done
+  echo $counts
+}
 # Check if the parent object of the tests exists, delete if requested.
 # Takes the parent object path
 function checkForReTest() {
   local URL=$1
-  HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${URL})
+  local HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${URL})
   if [ "$HTTP_RES" != "201" ]; then
     if [ "$HTTP_RES" == "000" ]; then
       echo "Attempted to run test but received odd results (HTTP status of $HTTP_RES). Is Fedora4 running?"
@@ -112,7 +140,7 @@ function checkForReTest() {
       if [ "$RERUN" == "Y" ] || [ "$RERUN" == "y" ]; then
         if cleanUpPath "$URL"
         then
-          HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${URL})
+          local HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${URL})
         else
           echo "Error removing $URL, you may need to remove it manually."
           exit 1
@@ -129,9 +157,9 @@ function checkForReTest() {
 function cleanUpPath() {
   local URL=$1
   echo "Deleting ${FEDORA_URL}${URL}"
-  HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL})
+  local HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL})
   if [ "$HTTP_RES" == "204" ] || [ "$HTTP_RES" == "410" ]; then
-    HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL}/fcr:tombstone)
+    local HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XDELETE ${FEDORA_URL}${URL}/fcr:tombstone)
     if [ "$HTTP_RES" == "204" ]; then
       return 0
     fi

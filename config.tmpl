@@ -9,14 +9,14 @@ USE_JETTY=0
 
 if [ "$USE_JETTY" -eq 1 ]; then
   # Admin user
-  AUTH_USER="admin1"
-  AUTH_PASS="password3"
+  AUTH_USER="fedoraAdmin"
+  AUTH_PASS="fedoraAdmin"
   # User 2
   AUTH2_USER="user2"
   AUTH2_PASS="password2"
   # User 3
-  AUTH3_USER="user1"
-  AUTH3_PASS="password1"
+  AUTH3_USER="testuser"
+  AUTH3_PASS="testpass"
 else
   # Admin Username.
   AUTH_USER="fedoraAdmin"
@@ -32,6 +32,8 @@ else
   AUTH3_PASS="password1"
 fi
 
+# Writeable temp directory
+TEMP_DIR="/tmp"
 # Hostname for Fedora instance.
 FEDORA_HOST="http://localhost"
 # Port for Fedora instance.
@@ -52,6 +54,28 @@ SOLR_URL="http://localhost:8080/solr/collection1"
 # Triplestore URL (for camel-toolbox tests)
 TRIPLESTORE_URL="http://localhost:8080/fuseki/test/sparql"
 
+# Some useful references.
+JSONLD_MIMETYPE="application/ld+json"
+SPARQL_UPDATE_MIMETYPE="application/sparql-update"
+TURTLE="text/turtle"
+
+# Memento
+VERSIONED_RESOURCE="http://mementoweb.org/ns#OriginalResource"
+
+# LDP
+LDP_CONTAINER="http://www.w3.org/ns/ldp#Container"
+LDP_BASIC="http://www.w3.org/ns/ldp#BasicContainer"
+LDP_DIRECT="http://www.w3.org/ns/ldp#DirectContainer"
+LDP_INDIRECT="http://www.w3.org/ns/ldp#IndirectContainer"
+LDP_RS="http://www.w3.org/ns/ldp#Resource"
+LDP_NR="http://www.w3.org/ns/ldp#NonRDFSource"
+
+# FEDORA
+SERVER_MANAGED="http://fedora.info/definitions/v4/repository#ServerManaged"
+LENIENT="handling=lenient; received=\"minimal\""
+
+PREFER_LENIENT="Prefer: ${LENIENT}"
+PREFER_OMIT_SERVER_MANAGED="Prefer: return=representation; omit=\"${SERVER_MANAGED}\""
 
 # include shared functions
 . ./functions

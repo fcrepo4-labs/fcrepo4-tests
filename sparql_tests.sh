@@ -11,15 +11,15 @@ checkForReTest $PARENT
 
 # Tests
 echo "Create a container"
-HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: text/turtle" --data-binary "@${RSCDIR}/object.ttl" ${FEDORA_URL}${PARENT}/object)
+HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: ${TURTLE}" --data-binary "@${RSCDIR}/object.ttl" ${FEDORA_URL}${PARENT}/object)
 resultCheck 201 $HTTP_RES
 
 echo "Set dc:title with SPARQL"
-HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@${RSCDIR}/set_title.sparql" ${FEDORA_URL}${PARENT}/object/fcr:metadata)
+HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: ${SPARQL_UPDATE}" --data-binary "@${RSCDIR}/set_title.sparql" ${FEDORA_URL}${PARENT}/object)
 resultCheck 204 $HTTP_RES
 
 echo "Update dc:title with SPARQL"
-HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@${RSCDIR}/update_title.sparql" ${FEDORA_URL}${PARENT}/object/fcr:metadata)
+HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: ${SPARQL_UPDATE}" --data-binary "@${RSCDIR}/update_title.sparql" ${FEDORA_URL}${PARENT}/object)
 resultCheck 204 $HTTP_RES
 
 echo "Create a binary"
@@ -27,11 +27,11 @@ HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: im
 resultCheck 201 $HTTP_RES
 
 echo "Set dc:title with SPARQL"
-HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@${RSCDIR}/set_title.sparql" ${FEDORA_URL}${PARENT}/image/fcr:metadata)
+HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: ${SPARQL_UPDATE}" --data-binary "@${RSCDIR}/set_title.sparql" ${FEDORA_URL}${PARENT}/image/fcr:metadata)
 resultCheck 204 $HTTP_RES
 
 echo "Update dc:title with SPARQL"
-HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: application/sparql-update" --data-binary "@${RSCDIR}/update_title.sparql" ${FEDORA_URL}${PARENT}/image/fcr:metadata)
+HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: ${SPARQL_UPDATE}" --data-binary "@${RSCDIR}/update_title.sparql" ${FEDORA_URL}${PARENT}/image/fcr:metadata)
 resultCheck 204 $HTTP_RES
 
 echo "All tests completed"
