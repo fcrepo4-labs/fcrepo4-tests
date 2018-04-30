@@ -143,8 +143,7 @@ HTTP_RES=$(curl $CURL_OPTS -XGET -u${AUTH_USER}:${AUTH_PASS} ${MEMENTO_DESC_LOCA
 resultCheck 200 $HTTP_RES
 
 echo "Try to PUT the binary memento"
-echo "curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H\"Content-type: image/jpeg\" --data-binary \"@${RSCDIR}/basic_image.jpg\" ${MEMENTO_LOCATION}"
-HTTP_RES=$(curl $CURL_OPTS -XPATCH -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: image/jpeg" --data-binary "@${RSCDIR}/basic_image.jpg" ${MEMENTO_LOCATION})
+HTTP_RES=$(curl $CURL_OPTS -XPUT -u${AUTH_USER}:${AUTH_PASS} -H"Content-type: image/jpeg" --data-binary "@${RSCDIR}/basic_image.jpg" ${MEMENTO_LOCATION})
 resultCheck 405 $HTTP_RES
 
 echo "Try to PATCH the binary memento description"
