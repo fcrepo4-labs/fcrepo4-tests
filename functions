@@ -188,8 +188,8 @@ function cleanUpTests() {
 
 # Build a RFC date from passed params
 # Parameter order is 4 digit year, month, day, 24 clock hour, minute, seconds
-# Usage: buildRfcDate 2000 5 12 
-# Usage: buildRfcDate 2000 5 12 17 32 45
+# Usage: buildRfcDate 2000 05 12
+# Usage: buildRfcDate 2000 05 12 17 32 45
 function buildRfcDate() {
   if [ $# -ne 6 -a $# -ne 3 ]; then
     echo "Invalid number of arguments expected 3 or 6"
