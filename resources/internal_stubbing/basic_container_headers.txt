@@ -1,0 +1,21 @@
+HTTP/1.1 200 OK
+Date: Fri, 27 Apr 2018 18:19:25 GMT
+ETag: W/"e570c34c92ab8ae3eb4843338376123670129777"
+Last-Modified: Fri, 27 Apr 2018 18:04:13 GMT
+Link: <http://www.w3.org/ns/ldp#Resource>;rel="type"
+Link: <http://www.w3.org/ns/ldp#Container>;rel="type"
+Link: <http://www.w3.org/ns/ldp#BasicContainer>;rel="type"
+Link: <http://localhost:8080/rest/test_versioning/fcr:acl>; rel="acl"
+Link: <http://localhost:8080/static/constraints/ContainerConstraints.rdf>; rel="http://www.w3.org/ns/ldp#constrainedBy"
+Accept-Patch: application/sparql-update
+Accept-Post: text/turtle,text/rdf+n3,text/n3,application/rdf+xml,application/n-triples,application/ld+json,multipart/form-data,application/sparql-update,message/external-body; access-type=URL
+Allow: MOVE,COPY,DELETE,POST,HEAD,GET,PUT,PATCH,OPTIONS
+Preference-Applied: return=representation
+Vary: Prefer
+Vary: Accept
+Vary: Range
+Vary: Accept-Encoding
+Vary: Accept-Language
+Content-Type: text/turtle;charset=utf-8
+Content-Length: 1936
+Server: Jetty(9.3.1.v20150714)

@@ -7,7 +7,7 @@ CWD=$(pwd)
 function resultCheck() {
   local EXPECTED=$1
   local ACTUAL=$2
-  if [ "$EXPECTED" -ne "$ACTUAL" ]; then
+  if [ "$EXPECTED" != "$ACTUAL" ]; then
     echo "ERROR expected $EXPECTED and received $ACTUAL"
     if [ "$ACTUAL" == "405" ]; then
       echo "ERROR check the FEDORA_PATH setting in the config file to ensure you're pointing to the repository correctly."
@@ -21,15 +21,14 @@ function resultCheck() {
 
 # Takes an expected string and returned value
 # Usage: resultCheckString "This is the title" $RETURNED_TITLE
+# Deprecated: This is the same as resultCheck, just whether you wrap the 
+#   calling arguments in quotes.
+# ie. resultCheck 200 $Some_integer_or_single_word
+#     resultCheck "Some text to match" "$A_variable_with_text_containing_spaces"
 function resultCheckString() {
   local EXPECTED=$1
   local ACTUAL=$2
-  if [ "$EXPECTED" != "$ACTUAL" ]; then
-    echo "ERROR expected $EXPECTED and received $ACTUAL"
-    exit 1
-  fi
-  echo "$EXPECTED == $ACTUAL (Pass)"
-  return 0
+  resultCheck $1 $2
 }
 
 # Takes an expected Status Code and grabs the other from Headers.
@@ -38,17 +37,22 @@ function resultCheckString() {
 function resultCheckInHeaders() {
   local EXPECTED=$1
   local HEADERS=$2
-  local ACTUAL=$(echo "$HEADERS" | grep 'HTTP/1.1' | cut -d' ' -f2)
-  if [ "$EXPECTED" -ne "$ACTUAL" ]; then
-    echo "ERROR expected $EXPECTED and received $ACTUAL"
-    if [ "$ACTUAL" == "405" ]; then
-      echo "ERROR check the FEDORA_PATH setting in the config file to ensure you're pointing to the repository correctly."
+  for ACTUAL in $(echo "$HEADERS" | grep 'HTTP/1.1' | cut -d' ' -f2); do
+    if [ "$EXPECTED" == "$ACTUAL" ]; then
+      echo "$EXPECTED == $ACTUAL (Pass)"
+      return 0
+    elif [ "100" == "$ACTUAL" ]; then
+        continue
+    else
+      echo "ERROR expected $EXPECTED and received $ACTUAL"
+      if [ "$ACTUAL" == "405" ]; then
+        echo "ERROR check the FEDORA_PATH setting in the config file to ensure you're pointing to the repository correctly."
+      fi
+      exit 1
     fi
-
-    exit 1
-  fi
-  echo "$EXPECTED == $ACTUAL (Pass)"
-  return 0
+  done
+  echo "Unable to locate HTTP/1.1 header"
+  exit 1
 }
 
 # Find the Location: header and return the value in the LOCATION variable.
@@ -57,12 +61,12 @@ function resultCheckInHeaders() {
 # Return: Location URL in the $LOCATION variable.
 function getLocationFromHeaders() {
   local HEADERS=$1
-  export LOCATION=$(echo "$HEADERS" | grep '^Location:' | cut -d' ' -f2 | tr -d '\r')
+  local LOCATION=$(echo "$HEADERS" | grep '^Location:' | cut -d' ' -f2 | tr -d '\r')
   if [ -z "$LOCATION" ]; then
     echo "Could not find the Location: header"
-    return 1
+    exit 1
   else
-    return 0
+    echo "$LOCATION"
   fi
 }
 
@@ -78,7 +82,7 @@ function checkContentType() {
     return 0
   else
     echo "ERROR: expected Content-Type to be \"$EXPECTED\", but was \"$ACTUAL\""
-    return 1
+    exit 1
   fi
 }
 
@@ -93,27 +97,32 @@ function checkTitle() {
     return 0
   else
     echo "ERROR: expected dc:title to be \"$EXPECTED\", but was \"$ACTUAL\""
-    return 1
+    exit 1
   fi
 }
 
 # Searches the provided response for Link headers
 # and matches against the provided expected.
+# NOTE: Header variable must be wrapped in quotes when calling.
 # Usage: assertLinkHeader "<expected URI>;rel=\"title\"" "$HTTP_RES"
 function assertLinkHeader() {
   local EXPECTED=$1
   local RESPONSE=$2
-  for l in $(echo "$RESPONSE" | grep '^Link:' | sed -e 's/ /_/g' | cut -d'<' -f2 | tr -d '\r') ; do
-    local newLink="<"$(echo "$l" | sed -e 's/_//g')
-    if [ "${EXPECTED}" == "$newLink" ]; then
+  local Links=$(echo "$RESPONSE" | grep '^Link:' | sed -e 's/_/~/g' -e 's/ /_/g' | cut -d'<' -f2 | tr -d '\r')
+  for l in $Links ; do
+    local newLink="<"$(echo "$l" | sed -e 's/_//g' -e 's/~/_/g')
+    if [ "${EXPECTED}" == "${newLink}" ]; then
       echo "Link header $EXPECTED == $newLink (Pass)"
       return 0
     fi
   done
   echo "ERROR: Expected Link header $EXPECTED, did not find one."
-  return 1
+  exit 1
 }
 
+# Count instances of rel="memento" from a timemap's application/link-format response.
+# NOTE: Header variable must be wrapped in quotes when calling.
+# Usage: COUNT=$(countMementos "$HEADERS")
 function countMementos() {
   local RESPONSE=$1
   local counts=0
@@ -125,6 +134,7 @@ function countMementos() {
   done
   echo $counts
 }
+
 # Check if the parent object of the tests exists, delete if requested.
 # Takes the parent object path
 function checkForReTest() {
@@ -174,4 +184,43 @@ function cleanUpTests() {
   if [ "$DELETE" == "y" ] || [ "$DELETE" == 'y' ] || [ "$DELETE" == "" ]; then
     cleanUpPath "$PARENT"
   fi
+}
+
+# Build a RFC date from passed params
+# Parameter order is 4 digit year, month, day, 24 clock hour, minute, seconds
+# Usage: buildRfcDate 2000 5 12 
+# Usage: buildRfcDate 2000 5 12 17 32 45
+function buildRfcDate() {
+  if [ $# -ne 6 -a $# -ne 3 ]; then
+    echo "Invalid number of arguments expected 3 or 6"
+    exit 1
+  fi
+  local FMT="%Y%m%d%H%M%S"
+  local DATE="$1$2$3"
+  if [ $# -eq 6 ]; then
+    DATE="${DATE}$4$5$6"
+  else
+    DATE="${DATE}000000"
+  fi
+  echo $(date -jRuf "${FMT}" "${DATE}") 
+}
+
+# Compare the provided date to the Memento-Datetime header found.
+# NOTE: Header variable must be wrapped in quotes when calling.
+# Usage: validateMementoDatetime "Fri, 27 Apr 2018 18:04:13 GMT" "$HTTP_HEADERS"
+function validateMementoDatetime() {
+  local EXPECTED=$1
+  local HEADERS=$2
+  for ACTUAL in $( echo "$HEADERS" | grep 'Memento-Datetime' | sed -e 's/ /_/g' | tr -d '\r' ); do
+    local Datetime=$( echo $ACTUAL | sed -e 's/Memento-Datetime:_//' | sed -e 's/_/ /g')
+    if [ "$Datetime" == "$EXPECTED" ]; then
+      echo "$Datetime == $EXPECTED (Pass)"
+      return 0
+    else
+      echo "ERROR: Got $Datetime, expected $EXPECTED"
+      exit 1
+    fi
+  done
+  echo "ERROR: Did not find a Memento-Datetime header"
+  exit 1
 }

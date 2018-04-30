@@ -10,13 +10,13 @@ PARENT="/test_rdf"
 checkForReTest $PARENT
 
 echo "Post RDF and check a property"
-HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XPOST -H"Content-type: text/turtle" --data-binary "@${RSCDIR}/object.ttl" -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT})
+HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XPOST -H"Content-type: ${TURTLE}" --data-binary "@${RSCDIR}/object.ttl" -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}${PARENT})
 resultCheckInHeaders 201 "$HTTP_RES"
-getLocationFromHeaders "$HTTP_RES"
+LOCATION=$(getLocationFromHeaders "$HTTP_RES")
 checkTitle "An Object" $LOCATION
 
 echo "Update with Prefer: handling=lenient and check the property was updated"
-HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XPUT -H"Prefer: handling=lenient; received=\"minimal\"" -H"Content-type: application/n-triples" --data-binary "<$LOCATION> <http://purl.org/dc/elements/1.1/title> \"Updated Title\" ." $LOCATION)
+HTTP_RES=$(curl $CURL_OPTS -u${AUTH_USER}:${AUTH_PASS} -XPUT -H"${PREFER_LENIENT}" -H"Content-type: application/n-triples" --data-binary "<${LOCATION}> <http://purl.org/dc/elements/1.1/title> \"Updated Title\" ." ${LOCATION})
 resultCheck 204 $HTTP_RES
 checkTitle "Updated Title" $LOCATION
 
