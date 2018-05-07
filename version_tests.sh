@@ -249,7 +249,6 @@ COUNT=$(countMementos "$HTTP_RES")
 resultCheck 1 $COUNT
 
 echo "Putting a new binary description body to the deleted datetime"
-echo "curl $CURL_OPTS -POST -u${AUTH_USER}:${AUTH_PASS} -H\"${PREFER_LENIENT}\" -H\"Content-type: ${TURTLE}\" --data-binary \"@${TEMP_DIR}/memento_desc1\" -H\"Memento-Datetime: ${DATE}\" ${LOCATION}/fcr:metadata/fcr:versions"
 HTTP_RES=$(curl $CURL_OPTS -POST -u${AUTH_USER}:${AUTH_PASS} -H"${PREFER_LENIENT}" -H"Content-type: ${TURTLE}" --data-binary "@${TEMP_DIR}/memento_desc1" -H"Memento-Datetime: ${DATE}" ${LOCATION}/fcr:metadata/fcr:versions)
 resultCheck 201 "$HTTP_RES"
 

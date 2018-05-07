@@ -195,14 +195,33 @@ function buildRfcDate() {
     echo "Invalid number of arguments expected 3 or 6"
     exit 1
   fi
-  local FMT="%Y%m%d%H%M%S"
-  local DATE="$1$2$3"
-  if [ $# -eq 6 ]; then
-    DATE="${DATE}$4$5$6"
+  BUILD=$(uname)
+  if [ -z "${BUILD}" ]; then
+    echo "Sorry buildRdfDate only works on Linux/BSD/OSX builds, you'll need to locate the calls to it and hardcode in a date"
+    exit 1
   else
-    DATE="${DATE}000000"
+    if [ "${BUILD}" == "Linux" ]; then
+      local DATE="$1-$2-$3 "
+      if [ $# -eq 6 ]; then
+        DATE="${DATE}${4}:${5}:${6}"
+      else
+        DATE="${DATE}00:00:00"
+      fi
+      echo $(date -uR --date="${DATE}")
+    elif [ "${BUILD}" == "Darwin" -o "${BUILD}" == "FreeBSD" ]; then
+      local FMT="%Y%m%d%H%M%S"
+      local DATE="$1$2$3"
+      if [ $# -eq 6 ]; then
+        DATE="${DATE}$4$5$6"
+      else
+        DATE="${DATE}000000"
+      fi
+      echo $(date -jRuf "${FMT}" "${DATE}")
+    else
+      echo "Sorry buildRdfDate only works on Linux/BSD/OSX builds. We could not determine your OS."
+      exit 1
+    fi
   fi
-  echo $(date -jRuf "${FMT}" "${DATE}") 
 }
 
 # Compare the provided date to the Memento-Datetime header found.
