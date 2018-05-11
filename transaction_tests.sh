@@ -13,8 +13,8 @@ checkForReTest $PARENT
 echo "Create a transaction"
 HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XPOST -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}/fcr:tx)
 resultCheckInHeaders 201 "$HTTP_RES"
-if getLocationFromHeaders "$HTTP_RES"
-then
+LOCATION=$(getLocationFromHeaders "$HTTP_RES")
+if [ -n "$LOCATION" ]; then
   TRANSACTION=$( echo "${LOCATION}" | sed -e "s|${FEDORA_URL}||" | tr -d "\n\r")
   echo "Transaction is (${TRANSACTION})"
   
@@ -47,8 +47,8 @@ fi
 echo "Create a second transaction"
 HTTP_RES=$(curl $CUSTOM_CURL_OPTS -XPOST -u${AUTH_USER}:${AUTH_PASS} ${FEDORA_URL}/fcr:tx)
 resultCheckInHeaders 201 "$HTTP_RES"
-if getLocationFromHeaders "$HTTP_RES"
-then
+LOCATION=$(getLocationFromHeaders "$HTTP_RES")
+if [ -n "$LOCATION" ]; then
   TRANSACTION=$( echo "${LOCATION}" | sed -e "s|${FEDORA_URL}||" | tr -d "\n\r")
   echo "Transaction is (${TRANSACTION})"
   
