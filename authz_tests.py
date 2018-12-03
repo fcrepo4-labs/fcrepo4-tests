@@ -16,7 +16,15 @@ class FedoraAuthzTests(FedoraTests):
                 "<#writeauth> a acl:Authorization ;" \
                 "acl:accessToClass pcdm:Object ;" \
                 "acl:mode acl:Read, acl:Write;" \
-                "acl:agent \"{0}\" ."
+                "acl:default <{0}>; " \
+                "acl:agent \"{1}\" ."
+
+    FILES_ACL = "@prefix acl: <http://www.w3.org/ns/auth/acl#> .\n" \
+                "@prefix pcdm: <http://pcdm.org/models#> .\n" \
+                "<#writeauth> a acl:Authorization ;" \
+                "acl:accessTo <{0}> ;" \
+                "acl:mode acl:Read, acl:Write;" \
+                "acl:agent \"{1}\" ."
 
     def __init__(self, config):
         super().__init__(config)
@@ -64,30 +72,70 @@ class FedoraAuthzTests(FedoraTests):
         headers = {
             'Content-type': 'text/turtle'
         }
-        r = self.do_put(cover_acl, headers=headers,
-                        body=self.COVER_ACL.format(self.config[TestConstants.USER_NAME_PARAM]))
+        body = self.COVER_ACL.format(cover_location, self.config[TestConstants.USER_NAME_PARAM])
+        r = self.do_put(cover_acl, headers=headers, body=body)
         self.assertEqual(201, r.status_code, "Did not get expected response code")
 
         self.log("Create \"files\" inside \"cover\"")
         r = self.do_put(cover_location + "/files")
         self.assertEqual(201, r.status_code, "Did not get expected response code")
+        files_location = self.get_location(r)
+        files_acl = self.get_link_headers(r)
+        self.assertIsNotNone(files_acl['acl'])
+        files_acl = files_acl['acl'][0]
 
-        self.log("verifyAuthZ")
         self.log("Anonymous can't access \"cover\"")
         r = self.do_get(cover_location, auth='anonymous')
+        self.assertEqual(401, r.status_code, "Did not get expected response code")
+
+        self.log("Anonymous can't access \"cover/files\"")
+        r = self.do_get(files_location, auth='anonymous')
         self.assertEqual(401, r.status_code, "Did not get expected response code")
 
         self.log("{0} can access \"cover\"".format(self.config[TestConstants.ADMIN_USER_PARAM]))
         r = self.do_get(cover_location)
         self.assertEqual(200, r.status_code, "Did not get expected response code")
 
+        self.log("{0} can access \"cover/files\"".format(self.config[TestConstants.ADMIN_USER_PARAM]))
+        r = self.do_get(files_location)
+        self.assertEqual(200, r.status_code, "Did not get expected response code")
+
         self.log("{0} can access \"cover\"".format(self.config[TestConstants.USER_NAME_PARAM]))
         r = self.do_get(cover_location, admin=False)
         self.assertEqual(200, r.status_code, "Did not get expected response code")
 
+        self.log("{0} can access \"cover/files\"".format(self.config[TestConstants.USER_NAME_PARAM]))
+        r = self.do_get(files_location, admin=False)
+        self.assertEqual(200, r.status_code, "Did not get expected response code")
+
+        auth = self.create_auth(self.config[TestConstants.USER2_NAME_PARAM],
+                                self.config[TestConstants.USER2_PASS_PARAM])
         self.log("{0} can't access \"cover\"".format(self.config[TestConstants.USER2_NAME_PARAM]))
-        auth = self.create_auth(self.config[TestConstants.USER2_NAME_PARAM], self.config[TestConstants.USER2_PASS_PARAM])
         r = self.do_get(cover_location, auth=auth)
         self.assertEqual(403, r.status_code, "Did not get expected response code")
+
+        self.log("{0} can't access \"cover/files\"".format(self.config[TestConstants.USER2_NAME_PARAM]))
+        r = self.do_get(files_location, auth=auth)
+        self.assertEqual(403, r.status_code, "Did not get expected response code")
+
+        self.log("Verify \"cover/files\" has no ACL")
+        r = self.do_get(files_acl)
+        self.assertEqual(404, r.status_code, "Did not get expected response code")
+
+        self.log("PUT Acl to \"cover/files\" to allow access for {0}".format(self.config[TestConstants.USER2_NAME_PARAM]))
+        headers = {
+            'Content-type': 'text/turtle'
+        }
+        body = self.FILES_ACL.format(files_location, self.config[TestConstants.USER2_NAME_PARAM])
+        r = self.do_put(files_acl, headers=headers, body=body)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+
+        self.log("{0} can't access \"cover\"".format(self.config[TestConstants.USER2_NAME_PARAM]))
+        r = self.do_get(cover_location, auth=auth)
+        self.assertEqual(403, r.status_code, "Did not get expected response code")
+
+        self.log("{0} can access \"cover/files\"".format(self.config[TestConstants.USER2_NAME_PARAM]))
+        r = self.do_get(files_location, auth=auth)
+        self.assertEqual(200, r.status_code, "Did not get expected response code")
 
         self.log("Passed")
