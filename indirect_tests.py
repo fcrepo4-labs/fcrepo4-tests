@@ -9,7 +9,7 @@ import pyjq
 @register_tests
 class FedoraIndirectTests(FedoraTests):
 
-    # Create test objects all inside here for easy of review
+    # Create test objects all inside here for ease of review/removal
     CONTAINER = "/test_indirect"
 
     def __init__(self, config):

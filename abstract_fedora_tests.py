@@ -14,7 +14,11 @@ from email.utils import format_datetime
 
 class FedoraTests(unittest.TestCase):
 
+    # Holder for created objects, alternative to storing in containers and using recursive deletion.
+    # Not currently used.
     nodes = []
+
+    # Holds the configuration
     config = {}
 
     def __init__(self, config):
@@ -22,12 +26,15 @@ class FedoraTests(unittest.TestCase):
         self.config = config
 
     def getBaseUri(self):
+        """ Return the current base URI using each subclassed tests CONTAINER """
         return self.config[TestConstants.BASE_URL_PARAM] + self.CONTAINER
 
     def getFedoraBase(self):
+        """ Return the Fedora Base URI """
         return self.config[TestConstants.BASE_URL_PARAM]
 
     def run_tests(self):
+        """ Check we can access the machine and then run the tests """
         self.not_authorized()
         for test in self._testdict:
             method = getattr(self, test)
@@ -35,80 +42,92 @@ class FedoraTests(unittest.TestCase):
 
     def not_authorized(self):
         """ Ensure we can even access the repository """
-        my_auth = self.get_auth(True)
         try:
             baseurl = self.config[TestConstants.BASE_URL_PARAM]
-            r = requests.head(baseurl, auth=my_auth)
+            r = self.do_head(baseurl)
+            if str(r.status_code)[0:2] == '40':
+                mesg = "Received a {} status code accessing {}, you may need to provide/check credentials".format(
+                    r.status_code, self.config[TestConstants.BASE_URL_PARAM])
+                print(mesg)
+                raise RuntimeError(mesg)
         except requests.exceptions.ConnectionError:
             print("Cannot connect the Fedora server, is your configuration correct? {0}".format(baseurl))
             quit()
-        if str(r.status_code)[0:2] == '40':
-            mesg = "Received a {} status code accessing {}, you may need to provide/check credentials".format(
-                r.status_code, self.config[TestConstants.BASE_URL_PARAM])
-            print(mesg)
-            raise RuntimeError(mesg)
 
     @staticmethod
     def create_auth(username, password):
+        """ Create a Basic Auth object using the provided username:password """
         return requests.auth.HTTPBasicAuth(username, password)
 
     def create_admin_auth(self):
+        """ Create a Basic Auth object using the admin username:password """
         return FedoraTests.create_auth(
             self.config[TestConstants.ADMIN_USER_PARAM], self.config[TestConstants.ADMIN_PASS_PARAM])
 
     def create_user_auth(self):
+        """ Create a Basic Auth object using the test user 1 username:password """
         return FedoraTests.create_auth(
             self.config[TestConstants.USER_NAME_PARAM], self.config[TestConstants.USER_PASS_PARAM])
 
     def get_auth(self, admin=True):
-        if admin:
+        """ Default get auth to determine between admin user or test user 1 or anonymous """
+        if admin is None:
+            return None
+        elif admin is True:
             return self.create_admin_auth()
-        else:
+        elif admin is False:
             return self.create_user_auth()
+        else:
+            # Else we may have passed a custom auth, so pass it along
+            return admin
 
     def do_post(self, parent=None, headers=None, body=None, files=None, admin=True):
+        """ Do a POST """
         if parent is None:
-            parent = self.config[TestConstants.BASE_URL_PARAM]
+            parent = self.getBaseUri()
         if headers is None:
             headers = {}
         my_auth = self.get_auth(admin)
         return requests.post(parent, body, None, headers=headers, files=files, auth=my_auth)
 
     def do_put(self, url, headers=None, body=None, files=None, admin=True):
+        """ Do a PUT """
         if headers is None:
             headers = {}
         my_auth = self.get_auth(admin)
         return requests.put(url, body, headers=headers, files=files, auth=my_auth)
 
-    def do_get(self, url, headers=None, admin=True, auth=None):
+    def do_get(self, url, headers=None, admin=True):
+        """ Do a GET """
         if headers is None:
             headers = {}
-        if auth is not None:
-            my_auth = auth if auth != 'anonymous' else None
-        else:
-            my_auth = self.get_auth(admin)
+        my_auth = self.get_auth(admin)
 
         return requests.get(url, headers=headers, auth=my_auth)
 
     def do_head(self, url, headers=None, admin=True):
+        """ Do a HEAD """
         if headers is None:
             headers = {}
         my_auth = self.get_auth(admin)
         return requests.head(url, headers=headers, auth=my_auth)
 
     def do_patch(self, url, body, headers=None, admin=True):
+        """ Do a PATCH """
         if headers is None:
             headers = {}
         my_auth = self.get_auth(admin)
         return requests.patch(url, body, headers=headers, auth=my_auth)
 
     def do_delete(self, url, headers=None, admin=True):
+        """ Do a DELETE """
         if headers is None:
             headers = {}
         my_auth = self.get_auth(admin)
         return requests.delete(url, headers=headers, auth=my_auth)
 
     def do_options(self, url, admin=True):
+        """ Do an OPTIONS """
         my_auth = self.get_auth(admin)
         return requests.options(url, auth=my_auth)
 
@@ -138,7 +157,8 @@ class FedoraTests(unittest.TestCase):
         self.nodes.clear()
 
     def cleanup(self, uri):
-        print("Deleting {}".format(uri))
+        """ Remove the CONTAINER """
+        self.log("Deleting {0}".format(uri))
         r = self.do_delete(uri)
         if r.status_code == 204 or r.status_code == 410:
             if r.status_code == 204:
@@ -154,11 +174,12 @@ class FedoraTests(unittest.TestCase):
         return False
 
     def check_for_retest(self, uri):
+        """Try to create CONTAINER """
         response = self.do_put(uri)
         if response.status_code != 201:
             caller = inspect.stack()[1][0].f_locals['self'].__class__.__name__
-            print("The class ({}) has been run. You need to remove this object and all it's "
-                  "children before re-running the test.".format(caller))
+            print("The class ({}) has been run.\nYou need to remove the resource ({}) and all it's "
+                  "children before re-running the test.".format(caller, uri))
             rerun = input("Remove the test objects and re-run? (y/N) ")
             if rerun.lower().strip() == 'y':
                 if self.cleanup(uri):
@@ -172,6 +193,8 @@ class FedoraTests(unittest.TestCase):
 
     @staticmethod
     def get_link_headers(response):
+        """ Get the response's LINK headers, returned as a dict of key -> list()
+            where the key is the rel=property and the list contains all uris """
         headers = {}
         link_headers = [x.strip() for x in response.headers['Link'].split(",")]
         for x in link_headers:
@@ -199,6 +222,7 @@ class FedoraTests(unittest.TestCase):
 
     @staticmethod
     def get_rfc_date(isodate):
+        """ Convert a string of YYYY-MM-DD HH:ii:ss to RFC-1123 format """
         isodateformat = "%Y-%m-%d %H:%M:%S"
         date = datetime.strptime(isodate, isodateformat)
         # Take the provided date and make it as if we are starting in UTC
@@ -208,6 +232,7 @@ class FedoraTests(unittest.TestCase):
 
     @staticmethod
     def compare_rfc_dates(date1, date2):
+        """ Compare two RFC-1123 formatted strings """
         datetime1 = datetime.strptime(date1, TestConstants.RFC_1123_FORMAT)
         datetime2 = datetime.strptime(date2, TestConstants.RFC_1123_FORMAT)
         if datetime1 == datetime2:
@@ -218,6 +243,7 @@ class FedoraTests(unittest.TestCase):
             return 1
 
     def assertTitleExists(self, expected, location):
+        """ Check resource at {location} for the dc:title {expected} """
         get_headers = {
             'Accept': TestConstants.JSONLD_MIMETYPE
         }
@@ -240,6 +266,7 @@ class FedoraTests(unittest.TestCase):
 
 
 def Test(func):
+    """ Decorator for isolating test functions """
     functools.wraps(func)
 
     def wrapper(*args, **kwargs):
@@ -249,6 +276,7 @@ def Test(func):
 
 
 def register_tests(cls):
+    """ Class level decorator to generate a list of Test decorated functions """
     cls._testdict = []
     for methodname in dir(cls):
         method = getattr(cls, methodname)

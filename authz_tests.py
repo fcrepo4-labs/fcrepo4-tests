@@ -43,7 +43,7 @@ class FedoraAuthzTests(FedoraTests):
         random_string = "".join(lst)
 
         temp_auth = FedoraTests.create_auth(random_string, random_string)
-        r = self.do_get(self.getFedoraBase(), auth=temp_auth)
+        r = self.do_get(self.getFedoraBase(), admin=temp_auth)
         self.assertEqual(401, r.status_code, "Did not get expected response code")
 
         self.log("Create \"cover\" container")
@@ -85,11 +85,11 @@ class FedoraAuthzTests(FedoraTests):
         files_acl = files_acl['acl'][0]
 
         self.log("Anonymous can't access \"cover\"")
-        r = self.do_get(cover_location, auth='anonymous')
+        r = self.do_get(cover_location, admin=None)
         self.assertEqual(401, r.status_code, "Did not get expected response code")
 
         self.log("Anonymous can't access \"cover/files\"")
-        r = self.do_get(files_location, auth='anonymous')
+        r = self.do_get(files_location, admin=None)
         self.assertEqual(401, r.status_code, "Did not get expected response code")
 
         self.log("{0} can access \"cover\"".format(self.config[TestConstants.ADMIN_USER_PARAM]))
@@ -111,11 +111,11 @@ class FedoraAuthzTests(FedoraTests):
         auth = self.create_auth(self.config[TestConstants.USER2_NAME_PARAM],
                                 self.config[TestConstants.USER2_PASS_PARAM])
         self.log("{0} can't access \"cover\"".format(self.config[TestConstants.USER2_NAME_PARAM]))
-        r = self.do_get(cover_location, auth=auth)
+        r = self.do_get(cover_location, admin=auth)
         self.assertEqual(403, r.status_code, "Did not get expected response code")
 
         self.log("{0} can't access \"cover/files\"".format(self.config[TestConstants.USER2_NAME_PARAM]))
-        r = self.do_get(files_location, auth=auth)
+        r = self.do_get(files_location, admin=auth)
         self.assertEqual(403, r.status_code, "Did not get expected response code")
 
         self.log("Verify \"cover/files\" has no ACL")
@@ -131,11 +131,11 @@ class FedoraAuthzTests(FedoraTests):
         self.assertEqual(201, r.status_code, "Did not get expected response code")
 
         self.log("{0} can't access \"cover\"".format(self.config[TestConstants.USER2_NAME_PARAM]))
-        r = self.do_get(cover_location, auth=auth)
+        r = self.do_get(cover_location, admin=auth)
         self.assertEqual(403, r.status_code, "Did not get expected response code")
 
         self.log("{0} can access \"cover/files\"".format(self.config[TestConstants.USER2_NAME_PARAM]))
-        r = self.do_get(files_location, auth=auth)
+        r = self.do_get(files_location, admin=auth)
         self.assertEqual(200, r.status_code, "Did not get expected response code")
 
         self.log("Passed")
