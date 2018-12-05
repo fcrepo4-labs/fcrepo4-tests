@@ -84,21 +84,16 @@ class FedoraBasicIxnTests(FedoraTests):
     def doNestedTests(self):
         self.log("Running doNestedTests")
 
-        object_ttl = "@prefix dc: <http://purl.org/dc/elements/1.1/> ." \
-                     "@prefix pcdm: <http://pcdm.org/models#> ." \
-                     "<> a pcdm:Object ;" \
-                     "dc:title \"An Object\" ."
-
         self.log("Create a container")
         headers = {
             'Content-type': 'text/turtle'
         }
-        r = self.do_post(self.getBaseUri(), headers=headers, body=object_ttl)
+        r = self.do_post(self.getBaseUri(), headers=headers, body=TestConstants.OBJECT_TTL)
         self.assertEqual(201, r.status_code, "Did not get expected status code")
         location = self.get_location(r)
 
         self.log("Create a container in a container")
-        r = self.do_post(location, headers=headers, body=object_ttl)
+        r = self.do_post(location, headers=headers, body=TestConstants.OBJECT_TTL)
         self.assertEqual(201, r.status_code, "Did not get expected status code")
         location2 = self.get_location(r)
 

@@ -17,24 +17,16 @@ class FedoraIndirectTests(FedoraTests):
         self.log("Running doPcdmIndirect")
 
         self.log("Create a PCDM container")
-        pcdm_container = "@prefix dc: <http://purl.org/dc/elements/1.1/> ." \
-                         "@prefix pcdm: <http://pcdm.org/models#> ." \
-                         "<> a pcdm:Object ;" \
-                         "dc:title \"Object 1\" ."
         basic_headers = {
             'Link': self.make_type(TestConstants.LDP_BASIC),
             'Content-type': 'text/turtle'
         }
-        r = self.do_post(self.getBaseUri(), headers=basic_headers, body=pcdm_container)
+        r = self.do_post(self.getBaseUri(), headers=basic_headers, body=TestConstants.OBJECT_TTL)
         self.assertEqual(201, r.status_code, "Did not get expected status code")
         pcdm_container_location = self.get_location(r)
 
         self.log("Create a PCDM Collection")
-        pcdm_collection = "@prefix dc: <http://purl.org/dc/elements/1.1/> ." \
-                          "@prefix pcdm: <http://pcdm.org/models#> ." \
-                          "<> a pcdm:Object ;" \
-                          "dc:title \"Collection\" ."
-        r = self.do_post(self.getBaseUri(), headers=basic_headers, body=pcdm_collection)
+        r = self.do_post(self.getBaseUri(), headers=basic_headers, body=TestConstants.OBJECT_TTL)
         self.assertEqual(201, r.status_code, "Did not get expected status code")
         pcdm_collection_location = self.get_location(r)
 
