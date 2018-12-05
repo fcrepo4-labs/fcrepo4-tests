@@ -18,9 +18,6 @@ class FedoraRdfTests(FedoraTests):
         "text/n3;charset=utf-8"
     ]
 
-    def __init__(self, config):
-        super().__init__(config)
-
     @Test
     def testRdfSerialization(self):
         self.log("Starting testRdfSerialization")

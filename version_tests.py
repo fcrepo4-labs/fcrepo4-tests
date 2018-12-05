@@ -11,9 +11,6 @@ class FedoraVersionTests(FedoraTests):
     # Create test objects all inside here for easy of review
     CONTAINER = "/test_version"
 
-    def __init__(self, config):
-        super().__init__(config)
-
     @staticmethod
     def count_mementos(response):
         body = response.content.decode('UTF-8')

@@ -12,9 +12,6 @@ class FedoraTransactionTests(FedoraTests):
     # Create test objects all inside here for easy of review
     CONTAINER = "/test_transaction"
 
-    def __init__(self, config):
-        super().__init__(config)
-
     def get_transaction_provider(self):
         headers = {
             'Accept': TestConstants.JSONLD_MIMETYPE

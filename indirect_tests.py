@@ -12,9 +12,6 @@ class FedoraIndirectTests(FedoraTests):
     # Create test objects all inside here for ease of review/removal
     CONTAINER = "/test_indirect"
 
-    def __init__(self, config):
-        super().__init__(config)
-
     @Test
     def doPcdmIndirect(self):
         self.log("Running doPcdmIndirect")

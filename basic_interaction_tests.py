@@ -4,14 +4,12 @@ import TestConstants
 from abstract_fedora_tests import FedoraTests, register_tests, Test
 import os
 
+
 @register_tests
 class FedoraBasicIxnTests(FedoraTests):
 
     # Create test objects all inside here for easy of review
     CONTAINER = "/test_nested"
-
-    def __init__(self, config):
-        super().__init__(config)
 
     def createTestResource(self, type, files=None):
         """ Create a container with an expected type link type and return the URI """

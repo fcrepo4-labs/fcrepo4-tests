@@ -16,9 +16,6 @@ class FedoraFixityTests(FedoraTests):
     # Sha1 fixity result for basic_image.jpg in the resource sub-directory
     FIXITY_RESULT = "urn:sha1:dec028a4400b4f7ed80ed1174e65179d6b57a0f2"
 
-    def __init__(self, config):
-        super().__init__(config)
-
     @Test
     def aFixityTest(self):
 

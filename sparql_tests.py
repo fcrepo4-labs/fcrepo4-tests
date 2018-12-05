@@ -17,9 +17,6 @@ class FedoraSparqlTests(FedoraTests):
     UPDATE_SPARQL = "prefix dc: <http://purl.org/dc/elements/1.1/> " \
                     "DELETE { <> dc:title ?o . } INSERT { <> dc:title \"Updated title\" .} WHERE { <> dc:title ?o . }"
 
-    def __init__(self, config):
-        super().__init__(config)
-
     @Test
     def doSparqlContainerTest(self):
         self.log("Running doSparqlContainerTest")
