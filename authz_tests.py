@@ -23,7 +23,8 @@ class FedoraAuthzTests(FedoraTests):
                 "@prefix pcdm: <http://pcdm.org/models#> .\n" \
                 "<#writeauth> a acl:Authorization ;" \
                 "acl:accessTo <{0}> ;" \
-                "acl:mode acl:Read, acl:Write;"
+                "acl:mode acl:Read, acl:Write;" \
+                "acl:agent \"{1}\" ."
 
     @Test
     def doAuthTests(self):
