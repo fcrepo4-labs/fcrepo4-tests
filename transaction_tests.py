@@ -15,11 +15,6 @@ class FedoraTransactionTests(FedoraTests):
     def __init__(self, config):
         super().__init__(config)
 
-    def run_tests(self):
-        self.check_for_retest(self.getBaseUri())
-        super().run_tests()
-        self.cleanup(self.getBaseUri())
-
     def get_transaction_provider(self):
         headers = {
             'Accept': TestConstants.JSONLD_MIMETYPE

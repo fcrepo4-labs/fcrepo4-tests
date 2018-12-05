@@ -19,11 +19,6 @@ class FedoraFixityTests(FedoraTests):
     def __init__(self, config):
         super().__init__(config)
 
-    def run_tests(self):
-        self.check_for_retest(self.getBaseUri())
-        super().run_tests()
-        self.cleanup(self.getBaseUri())
-
     @Test
     def aFixityTest(self):
 

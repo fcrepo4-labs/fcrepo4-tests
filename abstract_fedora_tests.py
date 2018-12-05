@@ -27,23 +27,25 @@ class FedoraTests(unittest.TestCase):
 
     def getBaseUri(self):
         """ Return the current base URI using each subclassed tests CONTAINER """
-        return self.config[TestConstants.BASE_URL_PARAM] + self.CONTAINER
+        return self.getFedoraBase() + ('/' if self.CONTAINER[0] != '/' else '') + self.CONTAINER
 
     def getFedoraBase(self):
         """ Return the Fedora Base URI """
         return self.config[TestConstants.BASE_URL_PARAM]
 
     def run_tests(self):
+        self.check_for_retest(self.getBaseUri())
         """ Check we can access the machine and then run the tests """
         self.not_authorized()
         for test in self._testdict:
             method = getattr(self, test)
             method()
+        self.cleanup(self.getBaseUri())
 
     def not_authorized(self):
         """ Ensure we can even access the repository """
         try:
-            baseurl = self.config[TestConstants.BASE_URL_PARAM]
+            baseurl = self.getFedoraBase()
             r = self.do_head(baseurl)
             if str(r.status_code)[0:2] == '40':
                 mesg = "Received a {} status code accessing {}, you may need to provide/check credentials".format(
@@ -70,7 +72,11 @@ class FedoraTests(unittest.TestCase):
             self.config[TestConstants.USER_NAME_PARAM], self.config[TestConstants.USER_PASS_PARAM])
 
     def get_auth(self, admin=True):
-        """ Default get auth to determine between admin user or test user 1 or anonymous """
+        """ The admin argument of this function is used through out the testing infrastructure, it is explained here.
+            True - use admin username / password credentials
+            False - use test user 1 username / password credentials
+            None - use no credentials (anonymous access)
+            other - pass through, this is to allow creating a custom authentication package in a test. """
         if admin is None:
             return None
         elif admin is True:
