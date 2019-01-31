@@ -26,10 +26,7 @@ class FedoraAuthzTests(FedoraTests):
                 "acl:mode acl:Read, acl:Write;" \
                 "acl:agent \"{1}\" ."
 
-    @Test
-    def doAuthTests(self):
-        self.log("Running doAuthTests")
-
+    def verifyAuthEnabled(self):
         self.log("Checking that authZ is enabled")
         lst = [random.choice('0123456789abcdef') for n in range(16)]
         random_string = "".join(lst)
@@ -38,13 +35,22 @@ class FedoraAuthzTests(FedoraTests):
         r = self.do_get(self.getFedoraBase(), admin=temp_auth)
         self.assertEqual(401, r.status_code, "Did not get expected response code")
 
+    def getAclUri(self, response):
+        acls = self.get_link_headers(response)
+        self.assertIsNotNone(acls['acl'])
+        return acls['acl'][0]
+
+    @Test
+    def doAuthTests(self):
+        self.log("Running doAuthTests")
+
+        self.verifyAuthEnabled()
+
         self.log("Create \"cover\" container")
         r = self.do_put(self.getBaseUri() + "/cover")
         self.assertEqual(201, r.status_code, "Did not get expected response code")
         cover_location = self.get_location(r)
-        cover_acl = self.get_link_headers(r)
-        self.assertIsNotNone(cover_acl['acl'])
-        cover_acl = cover_acl['acl'][0]
+        cover_acl = self.getAclUri(r)
 
         self.log("Make \"cover\" a pcdm:Object")
         sparql = "PREFIX pcdm: <http://pcdm.org/models#>" \
@@ -72,9 +78,7 @@ class FedoraAuthzTests(FedoraTests):
         r = self.do_put(cover_location + "/files")
         self.assertEqual(201, r.status_code, "Did not get expected response code")
         files_location = self.get_location(r)
-        files_acl = self.get_link_headers(r)
-        self.assertIsNotNone(files_acl['acl'])
-        files_acl = files_acl['acl'][0]
+        files_acl = self.getAclUri(r)
 
         self.log("Anonymous can't access \"cover\"")
         r = self.do_get(cover_location, admin=None)
@@ -131,3 +135,90 @@ class FedoraAuthzTests(FedoraTests):
         self.assertEqual(200, r.status_code, "Did not get expected response code")
 
         self.log("Passed")
+
+    @Test
+    def doDirectIndirectAuthTests(self):
+        self.log("Running doDirectIndirectAuthTests")
+
+        self.verifyAuthEnabled()
+
+        self.log("Create a target container")
+        r = self.do_post()
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+        target_location = self.get_location(r)
+        target_acl = self.getAclUri(r)
+
+        self.log("Create a write container")
+        r = self.do_post()
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+        write_location = self.get_location(r)
+        write_acl = self.getAclUri(r)
+
+        self.log("Make sure the /target resource is readonly")
+        target_ttl = "@prefix acl: <http://www.w3.org/ns/auth/acl#> .\n"\
+                     "<#readauthz> a acl:Authorization ;\n" \
+                     "  acl:agent \"{0}\" ;\n" \
+                     "  acl:mode acl:Read ;\n" \
+                     "  acl:accessTo <{1}> .\n".format(self.config[TestConstants.USER_NAME_PARAM], target_location)
+        headers = {
+            'Content-type': 'text/turtle'
+        }
+        r = self.do_put(target_acl, headers=headers, body=target_ttl)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+
+        self.log("Make sure the write resource is writable by \"{0}\"".format(self.config[TestConstants.USER_NAME_PARAM]))
+        write_ttl = "@prefix acl: <http://www.w3.org/ns/auth/acl#> .\n" \
+                    "<#writeauth> a acl:Authorization ;\n" \
+                    "   acl:agent \"{0}\" ;\n" \
+                    "   acl:mode acl:Read, acl:Write ;\n" \
+                    "   acl:accessTo <{1}> ;\n" \
+                    "   acl:default <{1}> .\n".format(self.config[TestConstants.USER_NAME_PARAM], write_location)
+        r = self.do_put(write_acl, headers=headers, body=write_ttl)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+
+        self.log("Verify that \"{0}\" can create a simple resource under write resource".format(self.config[TestConstants.USER_NAME_PARAM]))
+        r = self.do_post(write_location, admin=False)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+
+        self.log("Verify that \"{0}\" CANNOT create a resource under target resource".format(self.config[TestConstants.USER_NAME_PARAM]))
+        r = self.do_post(target_location, admin=False)
+        self.assertEqual(403, r.status_code, "Did not get expected response code")
+
+        self.log("Verify that \"{0}\" CANNOT create direct or indirect containers that reference target resources".format(self.config[TestConstants.USER_NAME_PARAM]))
+        headers = {
+            'Content-type': 'text/turtle',
+            'Link': self.make_type(TestConstants.LDP_DIRECT)
+        }
+        direct_ttl = "@prefix ldp: <http://www.w3.org/ns/ldp#> .\n" \
+                     "@prefix test: <http://example.org/test#> .\n" \
+                     "<>  ldp:membershipResource <{0}> ;\n" \
+                     "ldp:hasMemberRelation test:predicateToCreate .\n".format(target_location)
+        r = self.do_post(write_location, headers=headers, body=direct_ttl, admin=False)
+        self.assertEqual(403, r.status_code, "Did not get expected response code")
+
+        headers = {
+            'Content-type': 'text/turtle',
+            'Link': self.make_type(TestConstants.LDP_INDIRECT)
+        }
+        indirect_ttl = "@prefix ldp: <http://www.w3.org/ns/ldp#> .\n" \
+                       "@prefix test: <http://example.org/test#> .\n" \
+                       "<> ldp:insertedContentRelation test:something ;\n" \
+                       "ldp:membershipResource <{0}> ;\n" \
+                       "ldp:hasMemberRelation test:predicateToCreate .\n".format(target_location)
+        r = self.do_post(write_location, headers=headers, body=indirect_ttl, admin=False)
+        self.assertEqual(403, r.status_code, "Did not get expected response code")
+
+        self.log("Go ahead and create the indirect and direct containers as admin")
+        r = self.do_post(write_location, headers=headers, body=direct_ttl)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+        direct_location = self.get_location(r)
+        r = self.do_post(write_location, headers=headers, body=indirect_ttl)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+        indirect_location = self.get_location(r)
+
+        self.log("Attempt to verify that \"{0}\" can not actually create relationships on the readonly resource via " \
+                 "direct or indirect container".format(self.config[TestConstants.USER_NAME_PARAM]))
+        r = self.do_post(direct_location, admin=False)
+        self.assertEqual(403, r.status_code, "Did not get expected status code")
+        r = self.do_post(indirect_location, admin=False)
+        self.assertEqual(403, r.status_code, "Did not get expected status code")
