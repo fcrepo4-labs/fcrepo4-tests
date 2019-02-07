@@ -19,7 +19,11 @@ This has been designed for Python 3, but should be backwards compatible.
 
 To install:
 1. Clone this directory
-1. In the fcrepo4-tests directory run `pip install -r requirements.txt` to install dependencies
+1. In the fcrepo4-tests directory run 
+    * `pip install -r requirements.txt` for python 2.*
+    * `pip3 install -r requirements.txt` for python 3.*
+    
+    to install dependencies
 1. Run the tests with the config file switch (`-c`), ie. `./testrunner.py -c config.yml.example`
 
 ## Usage
