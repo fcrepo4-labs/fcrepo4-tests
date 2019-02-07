@@ -136,7 +136,8 @@ class FedoraAuthzTests(FedoraTests):
 
         self.log("Passed")
 
-    @Test
+    # Re-enable once https://github.com/fcrepo4/fcrepo4/pull/1465 lands.
+    # @Test
     def doDirectIndirectAuthTests(self):
         self.log("Running doDirectIndirectAuthTests")
 
