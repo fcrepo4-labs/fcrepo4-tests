@@ -1,0 +1,9 @@
+---
+default:
+  baseurl: http://localhost:8080/rest 
+  admin_user: fedoraAdmin
+  admin_password: fedoraAdmin 
+  user1: testuser
+  password1: testpass 
+  user2: testuser2
+  password2: testpass

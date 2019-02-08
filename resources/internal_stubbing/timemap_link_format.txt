@@ -1,5 +1,0 @@
-<http://localhost:8080/rest/test_versioning/object1>; rel="original",
-<http://localhost:8080/rest/test_versioning/object1>; rel="timegate",
-<http://localhost:8080/rest/test_versioning/object1/fcr:versions/20180427180411>; rel="memento"; datetime="Fri, 27 Apr 2018 18:04:11 GMT",
-<http://localhost:8080/rest/test_versioning/object1/fcr:versions/20180427180412>; rel="memento"; datetime="Fri, 27 Apr 2018 18:04:12 GMT",
-<http://localhost:8080/rest/test_versioning/object1/fcr:versions>; rel="self"; from="Fri, 27 Apr 2018 18:04:11 GMT"; until="Fri, 27 Apr 2018 18:04:12 GMT"; type="application/link-format",

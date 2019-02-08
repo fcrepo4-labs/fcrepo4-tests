@@ -1,7 +1,0 @@
-PREFIX pcdm: <http://pcdm.org/models#>
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
-INSERT {     
-  <> rdf:type pcdm:Object 
-}
-WHERE { }
