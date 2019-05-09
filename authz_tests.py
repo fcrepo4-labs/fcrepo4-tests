@@ -3,6 +3,7 @@
 import TestConstants
 from abstract_fedora_tests import FedoraTests, register_tests, Test
 import random
+import uuid
 
 
 @register_tests
@@ -136,8 +137,7 @@ class FedoraAuthzTests(FedoraTests):
 
         self.log("Passed")
 
-    # Re-enable once https://github.com/fcrepo4/fcrepo4/pull/1465 lands.
-    # @Test
+    @Test
     def doDirectIndirectAuthTests(self):
         self.log("Running doDirectIndirectAuthTests")
 
@@ -177,8 +177,14 @@ class FedoraAuthzTests(FedoraTests):
         r = self.do_put(write_acl, headers=headers, body=write_ttl)
         self.assertEqual(201, r.status_code, "Did not get expected response code")
 
-        self.log("Verify that \"{0}\" can create a simple resource under write resource".format(self.config[TestConstants.USER_NAME_PARAM]))
+        self.log("Verify that \"{0}\" can create a simple resource under write resource (POST)".format(self.config[TestConstants.USER_NAME_PARAM]))
         r = self.do_post(write_location, admin=False)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+
+        uuid_value = str(uuid.uuid4())
+        self.log("Verify that \"{0}\" can create a simple resource under write resource (PUT)".format(
+            self.config[TestConstants.USER_NAME_PARAM]))
+        r = self.do_put(write_location + "/" + uuid_value, admin=False)
         self.assertEqual(201, r.status_code, "Did not get expected response code")
 
         self.log("Verify that \"{0}\" CANNOT create a resource under target resource".format(self.config[TestConstants.USER_NAME_PARAM]))
@@ -223,3 +229,13 @@ class FedoraAuthzTests(FedoraTests):
         self.assertEqual(403, r.status_code, "Did not get expected status code")
         r = self.do_post(indirect_location, admin=False)
         self.assertEqual(403, r.status_code, "Did not get expected status code")
+
+        self.log("Verify that \"{0}\" can still create a simple resource under write resource (POST)".format(self.config[TestConstants.USER_NAME_PARAM]))
+        r = self.do_post(write_location, admin=False)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+
+        uuid_value = str(uuid.uuid4())
+        self.log("Verify that \"{0}\" can still create a simple resource under write resource (PUT)".format(
+            self.config[TestConstants.USER_NAME_PARAM]))
+        r = self.do_put(write_location + "/" + uuid_value, admin=False)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
