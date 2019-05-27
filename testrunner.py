@@ -17,6 +17,7 @@ from sparql_tests import FedoraSparqlTests
 from transaction_tests import FedoraTransactionTests
 from authz_tests import FedoraAuthzTests
 from indirect_tests import FedoraIndirectTests
+from camel_tests import FedoraCamelTests
 
 
 class FedoraTestRunner:
@@ -31,7 +32,9 @@ class FedoraTestRunner:
         (TestConstants.USER2_NAME_PARAM, True),
         (TestConstants.USER2_PASS_PARAM, True),
         (TestConstants.LOG_FILE_PARAM, False),
-        (TestConstants.SELECTED_TESTS_PARAM, False)
+        (TestConstants.SELECTED_TESTS_PARAM, False),
+        (TestConstants.SOLR_URL_PARAM, False),
+        (TestConstants.TRIPLESTORE_URL_PARAM, False)
     ]
     config = {}
     logger = None
@@ -99,6 +102,9 @@ class FedoraTestRunner:
             if test == 'all' or test == 'indirect':
                 indirect = FedoraIndirectTests(self.config)
                 indirect.run_tests()
+            if test == 'camel':
+                camel = FedoraCamelTests(self.config)
+                camel.run_tests()
 
     def main(self, args):
         self.set_up(args)
@@ -116,7 +122,7 @@ def csv_list(string):
 
 
 class CSVAction(argparse.Action):
-    valid_options = ["authz", "basic", "sparql", "rdf", "version", "transaction", "fixity", "indirect"]
+    valid_options = ["authz", "basic", "sparql", "rdf", "version", "transaction", "fixity", "indirect", "camel"]
 
     def __call__(self, parser, args, values, option_string=None):
         if isinstance(values, list):
@@ -158,7 +164,7 @@ if __name__ == '__main__':
     parser.add_argument('-k', '--' + TestConstants.USER2_PASS_PARAM, dest=TestConstants.USER2_PASS_PARAM,
                         help="Second regular user password")
     parser.add_argument('-t', '--tests', dest="selected_tests", help='Comma separated list of which tests to run from '
-                        '{0}. Defaults to running all tests'.format(",".join(CSVAction.valid_options)),
+                        '{0}. Defaults to running all tests'.format(", ".join(CSVAction.valid_options)),
                         default=['all'], type=csv_list, action=CSVAction)
 
     args = parser.parse_args()

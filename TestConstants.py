@@ -10,6 +10,8 @@ USER2_NAME_PARAM = "user2"
 USER2_PASS_PARAM = "password2"
 LOG_FILE_PARAM = "logfile"
 SELECTED_TESTS_PARAM = "selected_tests"
+SOLR_URL_PARAM = "solrurl"
+TRIPLESTORE_URL_PARAM = "triplestoreurl"
 # Via RFC 7231 3.3
 PAYLOAD_HEADERS = ['Content-Length', 'Content-Range', 'Trailer', 'Transfer-Encoding']
 
@@ -31,6 +33,9 @@ RFC_1123_FORMAT = "%a, %d %b %Y %H:%M:%S GMT"
 # General Mime and LDP constants
 JSONLD_MIMETYPE = "application/ld+json"
 SPARQL_UPDATE_MIMETYPE = "application/sparql-update"
+TURTLE_MIMETYPE = "text/turtle"
+SPARQL_QUERY_MIMETYPE = "application/sparql-query"
+SPARQL_RESULT_JSON_MIMETYPE = "application/sparql-results+json"
 
 LDP_NS = "http://www.w3.org/ns/ldp#"
 LDP_CONTAINER = LDP_NS + "Container"
@@ -50,3 +55,10 @@ OBJECT_TTL = "@prefix dc: <http://purl.org/dc/elements/1.1/> ." \
              "@prefix pcdm: <http://pcdm.org/models#> ." \
              "<> a pcdm:Object ;" \
              "dc:title \"An Object\" ."
+
+PCDM_CONTAINER_TITLE = "PCDM Container"
+
+PCDM_CONTAINER_TTL = "@prefix dc: <http://purl.org/dc/elements/1.1/> ." \
+                     "@prefix pcdm: <http://pcdm.org/models#> ." \
+                     "<> a pcdm:Object ;" \
+                     "dc:title \"{0}\" .".format(PCDM_CONTAINER_TITLE)

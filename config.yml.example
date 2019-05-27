@@ -7,3 +7,13 @@ default:
   password1: testpass 
   user2: testuser2
   password2: testpass
+tomcat:
+  baseurl: http://localhost:8080/fcrepo/rest
+  admin_user: fedoraAdmin
+  admin_password: secret3
+  user1: adminuser
+  password1: password2
+  user2: testuser
+  password2: password1
+  solrurl: http://localhost:8080/solr
+  triplestoreurl: http://localhost:8080/fuseki/test/query
