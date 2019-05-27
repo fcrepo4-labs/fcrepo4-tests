@@ -103,7 +103,7 @@ To run only the `authz` and `sparql` tests you would execute:
 `camel` tests are **NOT** executed by default, due to timing issues they should be run separately.
 
 They also require the configuration to have a `solrurl` parameter pointing to a Solr endpoint and a
-`triplestoreurl` parameter pointing to the SPARQL endpoint of a triplestore fed.
+`triplestoreurl` parameter pointing to the SPARQL endpoint of a triplestore.
 
 Both of these systems must be fed by the fcrepo-camel-toolbox for this testing.
 
@@ -133,7 +133,7 @@ Both of these systems must be fed by the fcrepo-camel-toolbox for this testing.
 1. Create a LDP Indirect container
 1. Validate the correct Link header type
 
-### camel - not run by default
+### camel - see [note](#camel-tests)
 1. Create a container
 1. Check the container is indexed to Solr
 1. Check the container is indexed to the triplestore
