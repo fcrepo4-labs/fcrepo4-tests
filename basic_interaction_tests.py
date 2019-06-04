@@ -31,59 +31,43 @@ class FedoraBasicIxnTests(FedoraTests):
 
     @Test
     def testBasicContainer(self):
-        self.log("Running testBasicContainer")
         self.createTestResource(TestConstants.LDP_BASIC)
-        self.log("Passed")
 
     @Test
     def testDirectContainer(self):
-        self.log("Running testDirectContainer")
         self.createTestResource(TestConstants.LDP_DIRECT)
-        self.log("Passed")
 
     @Test
     def testIndirectContainer(self):
-        self.log("Running testIndirectContainer")
         self.createTestResource(TestConstants.LDP_INDIRECT)
-        self.log("Passed")
 
     @Test
     def testNonRdfSource(self):
-        self.log("Running testNonRdfSource")
         testfiles = {'files': ('testdata.csv', 'this,is,some,data\n')}
         self.createTestResource(TestConstants.LDP_NON_RDF_SOURCE, files=testfiles)
-        self.log("Passed")
 
     @Test
     def testLdpResource(self):
         """ We don't allow you to create a ldp:Resource so this returns 400 Bad Request """
-        self.log("Running testLdpResource")
         link_type = self.make_type(TestConstants.LDP_RESOURCE)
         headers = {
             'Link': link_type
         }
         r = self.do_post(self.getBaseUri(), headers=headers)
         self.assertEqual(400, r.status_code, "Did not get expected response")
-        self.log("Passed")
 
     @Test
     def testLdpContainer(self):
         """ We don't allow you to create a ldp:Container so this returns 400 Bad Request """
-        self.log("Running testLdpResource")
         link_type = self.make_type(TestConstants.LDP_CONTAINER)
         headers = {
             'Link': link_type
         }
         r = self.do_post(self.getBaseUri(), headers=headers)
         self.assertEqual(400, r.status_code, "Did create container")
-        self.log("Passed")
-
-
 
     @Test
     def doNestedTests(self):
-        self.log("Running doNestedTests")
-
         self.log("Create a container")
         headers = {
             'Content-type': 'text/turtle'
@@ -124,8 +108,6 @@ class FedoraBasicIxnTests(FedoraTests):
         self.assertEqual(410, r.status_code, "Did not get expected status code")
         r = self.do_get(location)
         self.assertEqual(410, r.status_code, "Did not get expected status code")
-
-        self.log("Passed")
 
     def changeIxnModels(self, location, starting_model):
         """ This function uses a created object at {location} with starting type {starting_model}.
@@ -179,12 +161,8 @@ class FedoraBasicIxnTests(FedoraTests):
             r = self.do_put(location, headers=headers, files=files)
             self.assertEqual(result, r.status_code, "Did not get expected response")
 
-        self.log("Passed")
-
     @Test
     def testChangeIxnModel(self):
-        self.log("Running changeIxnModel")
-
         self.log("Create a basic container")
         basic = self.createTestResource(TestConstants.LDP_BASIC)
         self.changeIxnModels(basic, TestConstants.LDP_BASIC)

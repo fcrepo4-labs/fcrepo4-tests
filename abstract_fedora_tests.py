@@ -33,14 +33,23 @@ class FedoraTests(unittest.TestCase):
         """ Return the Fedora Base URI """
         return self.config[TestConstants.BASE_URL_PARAM]
 
+    @staticmethod
+    def getCurrentClass():
+        return inspect.stack()[1][0].f_locals['self'].__class__.__name__
+
     def run_tests(self):
+        current = FedoraTests.getCurrentClass()
         self.check_for_retest(self.getBaseUri())
+        self.log("\nStarting class {0}\n".format(current))
         """ Check we can access the machine and then run the tests """
         self.not_authorized()
         for test in self._testdict:
             method = getattr(self, test)
+            self.log("Running {0}".format(test))
             method()
+            self.log("Passed\n")
         self.cleanup(self.getBaseUri())
+        self.log("\nExiting class {0}".format(current))
 
     def not_authorized(self):
         """ Ensure we can even access the repository """
@@ -181,21 +190,29 @@ class FedoraTests(unittest.TestCase):
 
     def check_for_retest(self, uri):
         """Try to create CONTAINER """
-        response = self.do_put(uri)
-        if response.status_code != 201:
-            caller = inspect.stack()[1][0].f_locals['self'].__class__.__name__
-            print("The class ({}) has been run.\nYou need to remove the resource ({}) and all it's "
-                  "children before re-running the test.".format(caller, uri))
-            rerun = input("Remove the test objects and re-run? (y/N) ")
-            if rerun.lower().strip() == 'y':
-                if self.cleanup(uri):
-                    self.do_put(uri)
-                else:
-                    print("Error removing $URL, you may need to remove it manually.")
-                    quit()
-            else:
-                print("Exiting...")
+        try:
+            response = self.do_put(uri)
+            if response.status_code == 403:
+                print("Received a 403 Forbidden response, please check your credentials and try again.")
                 quit()
+            elif response.status_code != 201:
+                caller = FedoraTests.getCurrentClass()
+                print("The class ({0}) has been run.\nYou need to remove the resource ({1}) and all it's "
+                      "children before re-running the test.".format(caller, uri))
+                rerun = input("Remove the test objects and re-run? (y/N) ")
+                if rerun.lower().strip() == 'y':
+                    if self.cleanup(uri):
+                        self.do_put(uri)
+                    else:
+                        print("Error removing {0}, you may need to remove it manually.".format(uri))
+                        quit()
+                else:
+                    print("Exiting...")
+                    quit()
+        except requests.exceptions.ConnectionError:
+            self.log("Unable to connect to your repository, if you are sure its running. Please check your base uri "
+                     "in the configuration.")
+            quit()
 
     @staticmethod
     def get_link_headers(response):

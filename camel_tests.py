@@ -25,7 +25,7 @@ class FedoraCamelTests(FedoraTests):
             super().run_tests()
 
     @Test
-    def createObject(self):
+    def CamelCreateObject(self):
         self.log("Create an object")
         internal_id = str(uuid.uuid4())
         expected_url = self.getBaseUri() + "/" + internal_id

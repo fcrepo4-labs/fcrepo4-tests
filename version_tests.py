@@ -19,7 +19,6 @@ class FedoraVersionTests(FedoraTests):
 
     @Test
     def doContainerVersioningTest(self):
-        self.log("Running doContainerVersioningTest")
         headers = {
             'Link': self.make_type(TestConstants.LDP_BASIC)
         }
@@ -126,12 +125,8 @@ class FedoraVersionTests(FedoraTests):
         r = self.do_get(memento_location)
         self.assertEqual(200, r.status_code, "Memento was not found")
 
-        self.log("Passed")
-
     @Test
     def doBinaryVersioningTest(self):
-        self.log("Running doBinaryVersioningTest")
-
         headers = {
             'Link': self.make_type(TestConstants.LDP_NON_RDF_SOURCE),
             'Content-Type': 'text/csv'
@@ -226,6 +221,3 @@ class FedoraVersionTests(FedoraTests):
         self.log("Check the memento exists again")
         r = self.do_head(memento_location)
         self.assertEqual(200, r.status_code, "Memento was not found")
-
-        self.log("Passed")
-

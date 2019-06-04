@@ -43,5 +43,3 @@ class FedoraFixityTests(FedoraTests):
                                    '."http://www.loc.gov/premis/rdf/v1#hasMessageDigest" | .[]?."@id"'.format(fixity_id),
                                    json_body)
         self.assertEqual(self.FIXITY_RESULT, fixity_result, "Fixity result was not a match for expected.")
-
-        self.log("Passed")

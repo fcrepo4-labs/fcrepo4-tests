@@ -37,20 +37,18 @@ class FedoraAuthzTests(FedoraTests):
         self.assertEqual(401, r.status_code, "Did not get expected response code")
 
     def getAclUri(self, response):
-        acls = self.get_link_headers(response)
+        acls = FedoraAuthzTests.get_link_headers(response)
         self.assertIsNotNone(acls['acl'])
         return acls['acl'][0]
 
     @Test
     def doAuthTests(self):
-        self.log("Running doAuthTests")
-
         self.verifyAuthEnabled()
 
         self.log("Create \"cover\" container")
         r = self.do_put(self.getBaseUri() + "/cover")
         self.assertEqual(201, r.status_code, "Did not get expected response code")
-        cover_location = self.get_location(r)
+        cover_location = FedoraAuthzTests.get_location(r)
         cover_acl = self.getAclUri(r)
 
         self.log("Make \"cover\" a pcdm:Object")
@@ -78,7 +76,7 @@ class FedoraAuthzTests(FedoraTests):
         self.log("Create \"files\" inside \"cover\"")
         r = self.do_put(cover_location + "/files")
         self.assertEqual(201, r.status_code, "Did not get expected response code")
-        files_location = self.get_location(r)
+        files_location = FedoraAuthzTests.get_location(r)
         files_acl = self.getAclUri(r)
 
         self.log("Anonymous can't access \"cover\"")
@@ -135,24 +133,20 @@ class FedoraAuthzTests(FedoraTests):
         r = self.do_get(files_location, admin=auth)
         self.assertEqual(200, r.status_code, "Did not get expected response code")
 
-        self.log("Passed")
-
     @Test
     def doDirectIndirectAuthTests(self):
-        self.log("Running doDirectIndirectAuthTests")
-
         self.verifyAuthEnabled()
 
         self.log("Create a target container")
         r = self.do_post()
         self.assertEqual(201, r.status_code, "Did not get expected response code")
-        target_location = self.get_location(r)
+        target_location = FedoraAuthzTests.get_location(r)
         target_acl = self.getAclUri(r)
 
         self.log("Create a write container")
         r = self.do_post()
         self.assertEqual(201, r.status_code, "Did not get expected response code")
-        write_location = self.get_location(r)
+        write_location = FedoraAuthzTests.get_location(r)
         write_acl = self.getAclUri(r)
 
         self.log("Make sure the /target resource is readonly")
@@ -239,3 +233,42 @@ class FedoraAuthzTests(FedoraTests):
             self.config[TestConstants.USER_NAME_PARAM]))
         r = self.do_put(write_location + "/" + uuid_value, admin=False)
         self.assertEqual(201, r.status_code, "Did not get expected response code")
+
+    @Test
+    def multipleAuthzCreatePermissiveSet(self):
+        self.verifyAuthEnabled()
+
+        self.log("Create a target container")
+        r = self.do_post()
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+        target_location = FedoraAuthzTests.get_location(r)
+        target_acl = self.getAclUri(r)
+
+        double_ttl = "@prefix acl: <http://www.w3.org/ns/auth/acl#> .\n" \
+                     "<#readonly> a acl:Authorization ;\n" \
+                     "   acl:agent \"{0}\" ;\n" \
+                     "   acl:mode acl:Read ;\n" \
+                     "   acl:accessTo <{1}> .\n" \
+                     "<#readwrite> a acl:Authorization ;\n" \
+                     "   acl:agent \"{0}\" ;\n" \
+                     "   acl:mode acl:Write ;\n" \
+                     "   acl:accessTo <{1}> .\n".format(self.config[TestConstants.USER_NAME_PARAM], target_location)
+        headers = {
+            'Content-type': TestConstants.TURTLE_MIMETYPE
+        }
+
+        self.log("Add ACL with one read and one read/write authz.")
+        r = self.do_put(target_acl, headers=headers, body=double_ttl)
+        self.assertEqual(201, r.status_code, "Did not get expected response code")
+
+        self.log("Check we can read")
+        r = self.do_get(target_location, admin=False)
+        self.assertEqual(200, r.status_code, "Did not get expected response code")
+
+        self.log("Check we can write")
+        headers = {
+            'Content-type': TestConstants.SPARQL_UPDATE_MIMETYPE
+        }
+        body = "prefix dc: <http://purl.org/dc/elements/1.1/> INSERT { <> dc:title \"A new title\" } WHERE {}"
+        r = self.do_patch(target_location, headers=headers, body=body)
+        self.assertEqual(204, r.status_code, "Did not get expected response code")
