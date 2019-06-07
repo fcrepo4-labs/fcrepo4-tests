@@ -17,6 +17,18 @@ class FedoraVersionTests(FedoraTests):
         mementos = [x for x in body.split('\n') if x.find("rel=\"memento\"") >= 0]
         return len(mementos)
 
+    def checkMementoCount(self, expected, uri, admin=None):
+        if admin is None:
+            admin = True
+        if not uri.endswith("/" + TestConstants.FCR_VERSIONS):
+            uri += "/" + TestConstants.FCR_VERSIONS
+        headers = {
+            'Accept': TestConstants.LINK_FORMAT_MIMETYPE
+        }
+        r = self.do_get(uri, headers=headers, admin=admin)
+        self.checkResponse(200, r)
+        self.checkValue(expected, self.count_mementos(r))
+
     @Test
     def doContainerVersioningTest(self):
         headers = {
@@ -45,15 +57,16 @@ class FedoraVersionTests(FedoraTests):
 
         new_date = FedoraTests.get_rfc_date("2000-06-01 08:21:00")
 
-        self.log("Create a version with provided datetime")
         headers = {
             'Content-Type': TestConstants.JSONLD_MIMETYPE,
             'Prefer': TestConstants.PUT_PREFER_LENIENT,
             'Memento-Datetime': new_date
         }
+        self.log("Check you must provide a valid body")
         r = self.do_post(version_endpoint, headers=headers, body="[]")
         self.checkResponse(400, r)
 
+        self.log("Create a version with provided datetime")
         r = self.do_post(version_endpoint, headers=headers, body=body)
         self.checkResponse(201, r)
         memento_location = self.get_location(r)
@@ -84,7 +97,7 @@ class FedoraVersionTests(FedoraTests):
         r = self.do_patch(memento_location, headers=headers, body=sparql_body)
         self.checkResponse(405, r)
 
-        # Delay one second to ensure we don't POST at the same time
+        self.log("Wait a second to change the time.")
         time.sleep(1)
 
         self.log("Create another version")
@@ -92,12 +105,7 @@ class FedoraVersionTests(FedoraTests):
         self.checkResponse(201, r)
 
         self.log("Count mementos")
-        headers = {
-            'Accept': TestConstants.LINK_FORMAT_MIMETYPE
-        }
-        r = self.do_get(version_endpoint, headers=headers)
-        self.checkResponse(200, r)
-        self.assertEqual(3, FedoraVersionTests.count_mementos(r), "Incorrect number of Mementos")
+        self.checkMementoCount(3, version_endpoint)
 
         self.log("Delete a Memento")
         r = self.do_delete(memento_location)
@@ -108,9 +116,7 @@ class FedoraVersionTests(FedoraTests):
         self.checkResponse(404, r)
 
         self.log("Validate delete with another count")
-        r = self.do_get(version_endpoint, headers=headers)
-        self.checkResponse(200, r)
-        self.assertEqual(2, FedoraVersionTests.count_mementos(r), "Incorrect number of Mementos")
+        self.checkMementoCount(2, version_endpoint)
 
         self.log("Create a memento at the deleted datetime")
         headers = {
@@ -199,7 +205,7 @@ class FedoraVersionTests(FedoraTests):
         r = self.do_put(memento_location, headers=headers, files=files)
         self.checkResponse(405, r)
 
-        # Delay one second to ensure we don't POST at the same time
+        self.log("Wait one second to change the time.")
         time.sleep(1)
 
         self.log("Create another version")
@@ -207,12 +213,7 @@ class FedoraVersionTests(FedoraTests):
         self.checkResponse(201, r)
 
         self.log("Count mementos")
-        headers = {
-            'Accept': TestConstants.LINK_FORMAT_MIMETYPE
-        }
-        r = self.do_get(version_endpoint, headers=headers)
-        self.checkResponse(200, r)
-        self.assertEqual(3, FedoraVersionTests.count_mementos(r), "Incorrect number of Mementos")
+        self.checkMementoCount(3, version_endpoint)
 
         self.log("Delete a Memento")
         r = self.do_delete(memento_location)
@@ -223,9 +224,7 @@ class FedoraVersionTests(FedoraTests):
         self.checkResponse(404, r)
 
         self.log("Validate delete with another count")
-        r = self.do_get(version_endpoint, headers=headers)
-        self.checkResponse(200, r)
-        self.assertEqual(2, FedoraVersionTests.count_mementos(r), "Incorrect number of Mementos")
+        self.checkMementoCount(2, version_endpoint)
 
         self.log("Create a memento at the deleted datetime")
         headers = {
@@ -239,6 +238,9 @@ class FedoraVersionTests(FedoraTests):
         self.log("Check the memento exists again")
         r = self.do_head(memento_location)
         self.checkResponse(200, r)
+
+        self.log("Validate count of mementos again")
+        self.checkMementoCount(3, version_endpoint)
 
     @Test
     def checkBinaryVersioning(self):
@@ -276,14 +278,10 @@ class FedoraVersionTests(FedoraTests):
         self.checkResponse(201, r)
 
         self.log("Count Mementos of binary")
-        r = self.do_get(binary_versions, headers=link_headers)
-        self.checkResponse(200, r)
-        self.checkValue(1, self.count_mementos(r))
+        self.checkMementoCount(1, binary_versions)
 
         self.log("Count Mementos of binary description")
-        r = self.do_get(metadata_versions, headers=link_headers)
-        self.checkResponse(200, r)
-        self.checkValue(1, self.count_mementos(r))
+        self.checkMementoCount(1, metadata_versions)
 
         self.log("Wait a second")
         time.sleep(1)
@@ -293,18 +291,12 @@ class FedoraVersionTests(FedoraTests):
         self.checkResponse(201, r)
 
         self.log("Count Mementos of binary")
-        r = self.do_get(binary_versions, headers=link_headers)
-        self.checkResponse(200, r)
-        self.checkValue(1, self.count_mementos(r))
+        self.checkMementoCount(1, binary_versions)
 
         self.log("Count Mementos of binary description")
-        r = self.do_get(metadata_versions, headers=link_headers)
-        self.checkResponse(200, r)
-        self.checkValue(2, self.count_mementos(r))
+        self.checkMementoCount(2, metadata_versions)
 
-
-    # Re-enable once FCREPO-3011 lands
-    #@Test
+    @Test
     def createBinaryVersionsAtSameTime(self):
         headers = {
             'Link': self.make_type(TestConstants.LDP_NON_RDF_SOURCE),
@@ -318,10 +310,7 @@ class FedoraVersionTests(FedoraTests):
         location = self.get_location(r)
         description_location = self.find_binary_description(r)
 
-        headers = {
-            'Prefer': FedoraTests.make_prefer_header(TestConstants.SERVER_MANAGED, True)
-        }
-        r = self.do_get(description_location, headers=headers)
+        r = self.do_get(description_location)
         new_body = "@prefix dc: <{0}> .\n".format(TestConstants.PURL_NS) + \
             r.text[0:-2] + ";\n dc:title \"New title\" .\n".format(TestConstants.PURL_NS)
 
@@ -348,3 +337,9 @@ class FedoraVersionTests(FedoraTests):
         self.log("Make version for {0} of binary description".format(the_date))
         r = self.do_post(description_version_endpoint, headers=headers, body=new_body)
         self.checkResponse(201, r)
+
+        self.log("Count binary mementos")
+        self.checkMementoCount(1, version_endpoint)
+
+        self.log("Count binary description mementos")
+        self.checkMementoCount(1, description_version_endpoint)
