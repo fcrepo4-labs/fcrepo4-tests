@@ -17,7 +17,7 @@ class FedoraVersionTests(FedoraTests):
         mementos = [x for x in body.split('\n') if x.find("rel=\"memento\"") >= 0]
         return len(mementos)
 
-    #@Test
+    @Test
     def doContainerVersioningTest(self):
         headers = {
             'Link': self.make_type(TestConstants.LDP_BASIC)
