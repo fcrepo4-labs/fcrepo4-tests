@@ -317,6 +317,10 @@ class FedoraVersionTests(FedoraTests):
         version_endpoint = location + "/" + TestConstants.FCR_VERSIONS
         description_version_endpoint = description_location + "/" + TestConstants.FCR_VERSIONS
 
+        self.log("Check we have no mementos of binary or description")
+        self.checkMementoCount(0, version_endpoint)
+        self.checkMementoCount(0, description_version_endpoint)
+
         the_date = FedoraTests.get_rfc_date('2019-05-21 18:30:00')
         files = {'file': ('report.csv', 'some,data,to,send\nanother,row,to,send\nevent,more,data,tosend\n')}
         headers = {
@@ -327,6 +331,11 @@ class FedoraVersionTests(FedoraTests):
         self.log("Make version for {0} of binary".format(the_date))
         r = self.do_post(version_endpoint, headers=headers, files=files)
         self.checkResponse(201, r)
+
+        self.log("Check we only made a memento of the binary")
+        self.checkMementoCount(1, version_endpoint)
+        self.log("Check we still have no description mementos")
+        self.checkMementoCount(0, description_version_endpoint)
 
         headers = {
             'Content-type': TestConstants.TURTLE_MIMETYPE,

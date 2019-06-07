@@ -265,7 +265,7 @@ class FedoraAuthzTests(FedoraTests):
             'Content-type': TestConstants.TURTLE_MIMETYPE
         }
 
-        self.log("Add ACL with one read and one read/write authz.")
+        self.log("Add ACL with one read and one write authz for the same URI.")
         r = self.do_put(target_acl, headers=headers, body=double_ttl)
         self.checkResponse(201, r)
 
@@ -335,7 +335,7 @@ class FedoraAuthzTests(FedoraTests):
         self.checkValue(expected_acl, acl_location)
 
         # metadata version is same datetime, so create it.
-        metadata_memento_location = binary_metadata_versions + "/" + memento_location[memento_location.rfind('/')+1:]
+        metadata_memento_location = binary_metadata_versions + memento_location[memento_location.rfind('/'):]
 
         self.log("Check metadata memento's acl link header is correct")
         r = self.do_get(metadata_memento_location)
