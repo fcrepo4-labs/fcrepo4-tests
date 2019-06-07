@@ -147,6 +147,7 @@ class FedoraTests(unittest.TestCase):
         return requests.options(url, auth=my_auth)
 
     def assert_regex_in(self, pattern, container, msg):
+        """ Do a regex match against all members of a list """
         for i in container:
             if re.search(pattern, i):
                 return
@@ -155,13 +156,15 @@ class FedoraTests(unittest.TestCase):
         self.fail(self._formatMessage(msg, standard_msg))
 
     def assert_regex_matches(self, pattern, text, msg):
+        """ Do a regex match against a string """
         if re.search(pattern, text):
             return
         standard_msg = '%s pattern not matched in %s' % (unittest.util.safe_repr(pattern),
                                                          unittest.util.safe_repr(text))
         self.fail(self._formatMessage(msg, standard_msg))
 
-    def make_type(self, type):
+    @staticmethod
+    def make_type(type):
         """ Turn a URI to Link type format """
         return "<{0}>; rel=\"type\"".format(type)
 
@@ -279,13 +282,21 @@ class FedoraTests(unittest.TestCase):
                 return
         self.fail("Did not find expected title \"{0}\" in response".format(expected))
 
-    def log(self, message):
+    @staticmethod
+    def log(message):
         print(message)
 
     def find_binary_description(self, response):
         headers = FedoraTests.get_link_headers(response)
         self.assertIsNotNone(headers['describedby'])
         return headers['describedby'][0]
+
+    def checkResponse(self, expected, response):
+        self.checkValue(expected, response.status_code)
+
+    def checkValue(self, expected, received):
+        self.assertEqual(expected, received, "Did not get expected value")
+        FedoraTests.log("   Passed {0} == {0}".format(received))
 
 
 def Test(func):

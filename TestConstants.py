@@ -36,6 +36,7 @@ SPARQL_UPDATE_MIMETYPE = "application/sparql-update"
 TURTLE_MIMETYPE = "text/turtle"
 SPARQL_QUERY_MIMETYPE = "application/sparql-query"
 SPARQL_RESULT_JSON_MIMETYPE = "application/sparql-results+json"
+LINK_FORMAT_MIMETYPE = "application/link-format"
 
 LDP_NS = "http://www.w3.org/ns/ldp#"
 LDP_CONTAINER = LDP_NS + "Container"
@@ -49,6 +50,10 @@ MEMENTO_NS = "http://mementoweb.org/ns#"
 MEM_ORIGINAL_RESOURCE = MEMENTO_NS + "OriginalResource"
 MEM_TIMEGATE = MEMENTO_NS + "TimeGate"
 MEM_TIMEMAP = MEMENTO_NS + "TimeMap"
+
+ACL_NS = "http://www.w3.org/ns/auth/acl#"
+
+PURL_NS = "http://purl.org/dc/elements/1.1/"
 
 # Test constructs
 OBJECT_TTL = "@prefix dc: <http://purl.org/dc/elements/1.1/> ." \
