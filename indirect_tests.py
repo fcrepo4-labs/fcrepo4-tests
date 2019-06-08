@@ -14,8 +14,6 @@ class FedoraIndirectTests(FedoraTests):
 
     @Test
     def doPcdmIndirect(self):
-        self.log("Running doPcdmIndirect")
-
         self.log("Create a PCDM container")
         basic_headers = {
             'Link': self.make_type(TestConstants.LDP_BASIC),
@@ -70,5 +68,3 @@ class FedoraIndirectTests(FedoraTests):
             if member == pcdm_container_location:
                 found_member = True
         self.assertTrue(found_member, "Did not find hasMember property")
-
-        self.log("Passed")

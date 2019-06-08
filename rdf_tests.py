@@ -20,8 +20,6 @@ class FedoraRdfTests(FedoraTests):
 
     @Test
     def testRdfSerialization(self):
-        self.log("Starting testRdfSerialization")
-
         self.log("Put new resource.")
         headers = {
             "Content-type": "text/turtle"
@@ -63,5 +61,3 @@ class FedoraRdfTests(FedoraTests):
         self.log("Test for tombstone")
         r = self.do_get(location)
         self.assertEqual(410, r.status_code, "Object's tombstone not found.")
-
-        self.log("Passed")

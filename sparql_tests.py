@@ -19,8 +19,6 @@ class FedoraSparqlTests(FedoraTests):
 
     @Test
     def doSparqlContainerTest(self):
-        self.log("Running doSparqlContainerTest")
-
         self.log("Create container")
         headers = {
             'Content-type': 'text/turtle'
@@ -42,12 +40,8 @@ class FedoraSparqlTests(FedoraTests):
         self.assertEqual(204, r.status_code, "Did not get expected results")
         self.assertTitleExists("Updated title", location)
 
-        self.log("Passed")
-
     @Test
     def doSparqlBinaryTest(self):
-        self.log("Running doSparqlBinaryTest")
-
         self.log("Create a binary")
         headers = {
             'Content-type': 'image/jpeg'
@@ -71,12 +65,8 @@ class FedoraSparqlTests(FedoraTests):
         self.assertEqual(204, r.status_code, "Did not get expected results")
         self.assertTitleExists("Updated title", description)
 
-        self.log("Passed")
-
     @Test
     def doUnicodeSparql(self):
-        self.log("Running doUnicodeSparql")
-
         self.log("Create a container")
         r = self.do_post(self.getBaseUri())
         self.assertEqual(201, r.status_code, "Did not get expected response code")
@@ -93,5 +83,3 @@ class FedoraSparqlTests(FedoraTests):
         r = self.do_patch(location, headers=headers, body=sparql)
         self.assertEqual(204, r.status_code, "Did not get expected response code")
         self.assertTitleExists("Die von Blumenbach gegründete anthropologische Sammlung der Universität", location)
-
-        self.log("Passed")
