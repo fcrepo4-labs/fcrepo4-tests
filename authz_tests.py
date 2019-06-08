@@ -397,3 +397,76 @@ class FedoraAuthzTests(FedoraTests):
         }
         r = self.do_patch(binary_description, patch_body, headers=headers, admin=False)
         self.checkResponse(204, r)
+
+    @Test
+    def testContainerWithAccessToClass(self):
+
+        self.verifyAuthEnabled()
+
+        self.log("Create a container")
+        r = self.do_post()
+        location = self.get_location(r)
+        acl_location = self.getAclUri(r)
+        versions_location = location + "/" + TestConstants.FCR_VERSIONS
+
+        full_acl = "@prefix acl: <{0}> .\n" \
+            "@prefix fedora: <{1}> .\n" \
+            "@prefix memento: <{2}> .\n" \
+            "<#container> a acl:Authorization ;\n" \
+            "  acl:mode acl:Read ;\n" \
+            "  acl:accessTo <{3}> ;\n" \
+            "  acl:agent \"{4}\" .\n" \
+            "<#timemap> a acl:Authorization ;\n" \
+            "  acl:mode acl:Read ;\n" \
+            "  acl:accessToClass fedora:TimeMap ;\n" \
+            "  acl:default <{3}> ;\n" \
+            "  acl:agent \"{4}\" .\n" \
+            "<#memento> a acl:Authorization ;\n" \
+            "  acl:mode acl:Read ;\n" \
+            "  acl:accessToClass memento:Memento ;\n" \
+            "  acl:default <{3}> ;\n" \
+            "  acl:agent \"{5}\" .\n".format(TestConstants.ACL_NS, TestConstants.FEDORA_NS, TestConstants.MEMENTO_NS,
+                                             location, self.config[TestConstants.USER_NAME_PARAM],
+                                             self.config[TestConstants.ADMIN_USER_PARAM])
+        turtle_headers = {
+            'Content-type': TestConstants.TURTLE_MIMETYPE
+        }
+
+        user2 = self.create_user2_auth()
+
+        self.log("Put ACL giving test user 1 read access to container and timemap but not mementos")
+        r = self.do_put(acl_location, headers=turtle_headers, body=full_acl)
+        self.checkResponse(201, r)
+
+        self.log("Create a Memento as admin")
+        r = self.do_post(versions_location)
+        self.checkResponse(201, r)
+        memento_location = self.get_location(r)
+
+        self.log("Try to get container as test user 1")
+        r = self.do_get(location, admin=False)
+        self.checkResponse(200, r)
+
+        self.log("Try to get container as test user 2")
+        r = self.do_get(location, admin=user2)
+        self.checkResponse(403, r)
+
+        self.log("Try to get timemap as test user 1")
+        r = self.do_get(versions_location, admin=False)
+        self.checkResponse(200, r)
+
+        self.log("Try to get timemap as test user 2")
+        r = self.do_get(versions_location, admin=user2)
+        self.checkResponse(403, r)
+
+        self.log("Check that memento exists as admin")
+        r = self.do_get(memento_location)
+        self.checkResponse(200, r)
+
+        self.log("Try to get memento as test user 1")
+        r = self.do_get(memento_location, admin=False)
+        self.checkResponse(403, r)
+
+        self.log("Try to get memento as test user 2")
+        r = self.do_get(memento_location, admin=user2)
+        self.checkResponse(403, r)

@@ -16,11 +16,12 @@ TRIPLESTORE_URL_PARAM = "triplestoreurl"
 PAYLOAD_HEADERS = ['Content-Length', 'Content-Range', 'Trailer', 'Transfer-Encoding']
 
 # Fedora specific constants
+FEDORA_NS = "http://fedora.info/definitions/v4/repository#"
 FCR_VERSIONS = "fcr:versions"
 FCR_FIXITY = "fcr:fixity"
-SERVER_MANAGED = "http://fedora.info/definitions/v4/repository#ServerManaged"
-INBOUND_REFERENCE = "http://fedora.info/definitions/v4/repository#InboundReferences"
-EMBEDED_RESOURCE = "http://fedora.info/definitions/v4/repository#EmbedResources"
+SERVER_MANAGED = FEDORA_NS + "ServerManaged"
+INBOUND_REFERENCE = FEDORA_NS + "InboundReferences"
+EMBEDED_RESOURCE = FEDORA_NS + "EmbedResources"
 
 GET_PREFER_MINIMAL = "return=minimal"
 PUT_PREFER_LENIENT = "handling=lenient; received=\"minimal\""
@@ -50,6 +51,7 @@ MEMENTO_NS = "http://mementoweb.org/ns#"
 MEM_ORIGINAL_RESOURCE = MEMENTO_NS + "OriginalResource"
 MEM_TIMEGATE = MEMENTO_NS + "TimeGate"
 MEM_TIMEMAP = MEMENTO_NS + "TimeMap"
+MEM_MEMENTO = MEMENTO_NS + "Memento"
 
 ACL_NS = "http://www.w3.org/ns/auth/acl#"
 

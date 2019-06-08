@@ -80,6 +80,11 @@ class FedoraTests(unittest.TestCase):
         return FedoraTests.create_auth(
             self.config[TestConstants.USER_NAME_PARAM], self.config[TestConstants.USER_PASS_PARAM])
 
+    def create_user2_auth(self):
+        """ Create a Basic Auth object using the test user 2 username:password """
+        return FedoraTests.create_auth(
+            self.config[TestConstants.USER2_NAME_PARAM], self.config[TestConstants.USER2_PASS_PARAM])
+
     def get_auth(self, admin=True):
         """ The admin argument of this function is used through out the testing infrastructure, it is explained here.
             True - use admin username / password credentials
