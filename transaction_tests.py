@@ -26,8 +26,6 @@ class FedoraTransactionTests(FedoraTests):
 
     @Test
     def doCommitTest(self):
-        self.log("Running doCommitTest")
-
         tx_provider = self.get_transaction_provider()
         if tx_provider is None:
             self.log("Could not location transaction provider")
@@ -66,12 +64,8 @@ class FedoraTransactionTests(FedoraTests):
             r = self.do_get(outside_location)
             self.assertEqual(200, r.status_code, "Did not get expected response code")
 
-            self.log("Passed")
-
     @Test
     def doRollbackTest(self):
-        self.log("Running doRollbackTest")
-
         tx_provider = self.get_transaction_provider()
         if tx_provider is None:
             self.log("Could not location transaction provider")
@@ -105,5 +99,3 @@ class FedoraTransactionTests(FedoraTests):
             self.log("Container is still not available outside the transaction")
             r = self.do_get(outside_location)
             self.assertEqual(404, r.status_code, "Did not get expected response code")
-
-            self.log("Passed")

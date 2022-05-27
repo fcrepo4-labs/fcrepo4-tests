@@ -68,6 +68,8 @@ second_site:
   password1: password1
   user2: user2
   password2: password2
+  solrurl: http://someserver:8080/solr
+  triplestoreurl: http://someserver:8080/fuseki/test/sparql
 ```
 
 To use the `second_site` configuration, simply start the testrunner with
@@ -82,11 +84,13 @@ You can also choose to run only a subset of all tests using the `-t|--tests` arg
 of the following values which indicate which tests to run.
 * `authz` - Authorization tests
 * `basic` - Basic interaction tests
-* `sparql` - Sparql operation tests
-* `rdf` - RDF serialization tests
-* `version` - Versioning tests
-* `transaction` - Transcation tests
+* `camel` - Camel toolbox tests (see [note](#camel-tests))
 * `fixity` - Binary fixity tests
+* `indirect` - Indirect container tests
+* `rdf` - RDF serialization tests
+* `sparql` - Sparql operation tests
+* `transaction` - Transcation tests
+* `version` - Versioning tests
 
 Without this parameter all the above tests will be run.
 
@@ -94,6 +98,14 @@ To run only the `authz` and `sparql` tests you would execute:
 ```
 ./testrunner.py -c config.yml -t authz,sparql
 ```
+
+##### Camel Tests
+`camel` tests are **NOT** executed by default, due to timing issues they should be run separately.
+
+They also require the configuration to have a `solrurl` parameter pointing to a Solr endpoint and a
+`triplestoreurl` parameter pointing to the SPARQL endpoint of a triplestore.
+
+Both of these systems must be fed by the fcrepo-camel-toolbox for this testing.
 
 ## Tests implemented
 
@@ -108,6 +120,34 @@ To run only the `authz` and `sparql` tests you would execute:
 1. Verify regular user 1 can access **cover**
 1. Verify regular user 2 can't access **cover**
 
+
+1. Create a container that is readonly for regular user 1
+1. Create a container that regular user 1 has read/write access to.
+1. Verify that regular user 1 can create/edit/append the container
+1. Verify that regular user 1 cannot create a direct or indirect container
+that targets the read-only container as the membership resource.
+
+
+1. Create a container
+1. Add an acl with multiple authorizations for user 1
+1. Verify that user 1 receives the most permissive set of permissions
+from the authorizations
+
+
+1. Verify that the `rel="acl"` link header is the same for:
+    * a binary
+    * its description
+    * the binary timemap
+    * the description timemap
+    * a binary memento
+    * a description memento
+
+
+1. Verify that both a binary and its description share the permissions give
+to the binary.
+
+
+
 ### basic
 1. Create a container
 1. Create a container inside the container from step 1
@@ -121,10 +161,38 @@ To run only the `authz` and `sparql` tests you would execute:
 1. Create a LDP Indirect container
 1. Validate the correct Link header type
 
+
+1. Create a basic container
+1. Create an indirect container
+1. Create a direct container
+1. Create a NonRDFSource
+1. Try to create a ldp:Resource (not allowed)
+1. Try to create a ldp:Container (not allowed)
+
+
+1. Try to change each of the following (basic, direct, indirect container
+and binary) to all other types.
+
+### camel - see [note](#camel-tests)
+1. Create a container
+1. Check the container is indexed to Solr
+1. Check the container is indexed to the triplestore
+
 ### fixity
 1. Create a binary resource
 1. Get a fixity result for that resource
 1. Compare that the SHA-1 hash matches the expected value
+
+### indirect
+1. Create a pcdm:Object
+2. Create a pcdm:Collection
+3. Create an indirect container "members" inside the pcdm:Collection
+4. Create a proxy object for the pcdm:Object inside the **members** indirectContainer
+5. Verify that the pcdm:Collection has the memberRelation property added pointing to the pcdm:Object
+
+### rdf
+1. Create a RDFSource object.
+1. Retrieve that object in all possible RDF serializations.
 
 ### sparql
 1. Create a container
@@ -137,7 +205,7 @@ To run only the `authz` and `sparql` tests you would execute:
 1. Verify the title
 1. Create a container
 1. Update the title to text with Unicode characters
-1. Verify the title 
+1. Verify the title
 
 ### transaction
 1. Create a transaction
@@ -170,9 +238,3 @@ To run only the `authz` and `sparql` tests you would execute:
 1. Create Memento at deleted memento's datetime
 1. Verify Memento exists
 
-### indirect
-1. Create a pcdm:Object
-2. Create a pcdm:Collection
-3. Create an indirect container "members" inside the pcdm:Collection
-4. Create a proxy object for the pcdm:Object inside the **members** indirectContainer
-5. Verify that the pcdm:Collection has the memberRelation property added pointing to the pcdm:Object

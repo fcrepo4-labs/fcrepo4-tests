@@ -33,14 +33,23 @@ class FedoraTests(unittest.TestCase):
         """ Return the Fedora Base URI """
         return self.config[TestConstants.BASE_URL_PARAM]
 
+    @staticmethod
+    def getCurrentClass():
+        return inspect.stack()[1][0].f_locals['self'].__class__.__name__
+
     def run_tests(self):
+        current = FedoraTests.getCurrentClass()
         self.check_for_retest(self.getBaseUri())
+        self.log("\nStarting class {0}\n".format(current))
         """ Check we can access the machine and then run the tests """
         self.not_authorized()
         for test in self._testdict:
             method = getattr(self, test)
+            self.log("Running {0}".format(test))
             method()
+            self.log("Passed\n")
         self.cleanup(self.getBaseUri())
+        self.log("\nExiting class {0}".format(current))
 
     def not_authorized(self):
         """ Ensure we can even access the repository """
@@ -70,6 +79,11 @@ class FedoraTests(unittest.TestCase):
         """ Create a Basic Auth object using the test user 1 username:password """
         return FedoraTests.create_auth(
             self.config[TestConstants.USER_NAME_PARAM], self.config[TestConstants.USER_PASS_PARAM])
+
+    def create_user2_auth(self):
+        """ Create a Basic Auth object using the test user 2 username:password """
+        return FedoraTests.create_auth(
+            self.config[TestConstants.USER2_NAME_PARAM], self.config[TestConstants.USER2_PASS_PARAM])
 
     def get_auth(self, admin=True):
         """ The admin argument of this function is used through out the testing infrastructure, it is explained here.
@@ -138,6 +152,7 @@ class FedoraTests(unittest.TestCase):
         return requests.options(url, auth=my_auth)
 
     def assert_regex_in(self, pattern, container, msg):
+        """ Do a regex match against all members of a list """
         for i in container:
             if re.search(pattern, i):
                 return
@@ -146,13 +161,15 @@ class FedoraTests(unittest.TestCase):
         self.fail(self._formatMessage(msg, standard_msg))
 
     def assert_regex_matches(self, pattern, text, msg):
+        """ Do a regex match against a string """
         if re.search(pattern, text):
             return
         standard_msg = '%s pattern not matched in %s' % (unittest.util.safe_repr(pattern),
                                                          unittest.util.safe_repr(text))
         self.fail(self._formatMessage(msg, standard_msg))
 
-    def make_type(self, type):
+    @staticmethod
+    def make_type(type):
         """ Turn a URI to Link type format """
         return "<{0}>; rel=\"type\"".format(type)
 
@@ -181,21 +198,29 @@ class FedoraTests(unittest.TestCase):
 
     def check_for_retest(self, uri):
         """Try to create CONTAINER """
-        response = self.do_put(uri)
-        if response.status_code != 201:
-            caller = inspect.stack()[1][0].f_locals['self'].__class__.__name__
-            print("The class ({}) has been run.\nYou need to remove the resource ({}) and all it's "
-                  "children before re-running the test.".format(caller, uri))
-            rerun = input("Remove the test objects and re-run? (y/N) ")
-            if rerun.lower().strip() == 'y':
-                if self.cleanup(uri):
-                    self.do_put(uri)
-                else:
-                    print("Error removing $URL, you may need to remove it manually.")
-                    quit()
-            else:
-                print("Exiting...")
+        try:
+            response = self.do_put(uri)
+            if response.status_code == 403:
+                print("Received a 403 Forbidden response, please check your credentials and try again.")
                 quit()
+            elif response.status_code != 201:
+                caller = FedoraTests.getCurrentClass()
+                print("The class ({0}) has been run.\nYou need to remove the resource ({1}) and all it's "
+                      "children before re-running the test.".format(caller, uri))
+                rerun = input("Remove the test objects and re-run? (y/N) ")
+                if rerun.lower().strip() == 'y':
+                    if self.cleanup(uri):
+                        self.do_put(uri)
+                    else:
+                        print("Error removing {0}, you may need to remove it manually.".format(uri))
+                        quit()
+                else:
+                    print("Exiting...")
+                    quit()
+        except requests.exceptions.ConnectionError:
+            self.log("Unable to connect to your repository, if you are sure its running. Please check your base uri "
+                     "in the configuration.")
+            quit()
 
     @staticmethod
     def get_link_headers(response):
@@ -262,13 +287,21 @@ class FedoraTests(unittest.TestCase):
                 return
         self.fail("Did not find expected title \"{0}\" in response".format(expected))
 
-    def log(self, message):
+    @staticmethod
+    def log(message):
         print(message)
 
     def find_binary_description(self, response):
         headers = FedoraTests.get_link_headers(response)
         self.assertIsNotNone(headers['describedby'])
         return headers['describedby'][0]
+
+    def checkResponse(self, expected, response):
+        self.checkValue(expected, response.status_code)
+
+    def checkValue(self, expected, received):
+        self.assertEqual(expected, received, "Did not get expected value")
+        FedoraTests.log("   Passed {0} == {0}".format(received))
 
 
 def Test(func):
